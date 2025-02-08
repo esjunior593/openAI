@@ -35,31 +35,39 @@ app.post('/procesar', async (req, res) => {
         }
         
         // Solicitar a OpenAI que analice la imagen y devuelva datos estructurados
-        const response = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [
-                { role: "system", content: "Eres un asistente experto en extraer información de comprobantes de pago. Devuelve solo un JSON con los datos requeridos, sin texto adicional." },
-                { 
-                    role: "user", 
-                    content: [
-                        { type: "text", text: `Extrae la siguiente información del comprobante de pago en la imagen y devuélvelo en formato JSON:
-                            {
-                                "documento": "Número exacto del comprobante o transacción sin palabras adicionales",
-                                "valor": "Monto del pago en formato numérico con dos decimales",
-                                "beneficiario": "Nombre del remitente o destinatario del pago",
-                                "banco": "Nombre del banco que emitió el comprobante",
-                                "tipo": "Indicar 'Depósito' o 'Transferencia' según el comprobante"
-                            }
-                            Devuelve solo el JSON, sin explicaciones ni texto adicional.
-                        `},
-                        { type: "image_url", image_url: { url: urlTempFile } }
-                    ]
-                }
-            ],
-            max_tokens: 300,
-        });
-        
-        const datosExtraidos = JSON.parse(response.choices[0].message.content);
+        // Solicitar a OpenAI que analice la imagen y devuelva datos estructurados
+const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    response_format: "json",  // 🔴 Esto obliga a OpenAI a devolver solo JSON
+    messages: [
+        { role: "system", content: "Eres un asistente experto en extraer información de comprobantes de pago. Devuelve solo un JSON con los datos requeridos, sin texto adicional." },
+        { 
+            role: "user", 
+            content: [
+                { type: "text", text: `Extrae la siguiente información del comprobante de pago en la imagen y devuélvelo en formato JSON:
+                    {
+                        "documento": "Número exacto del comprobante o transacción sin palabras adicionales",
+                        "valor": "Monto del pago en formato numérico con dos decimales",
+                        "beneficiario": "Nombre del remitente o destinatario del pago",
+                        "banco": "Nombre del banco que emitió el comprobante",
+                        "tipo": "Indicar 'Depósito' o 'Transferencia' según el comprobante"
+                    }
+                    Devuelve solo el JSON, sin explicaciones ni texto adicional.
+                `},
+                { type: "image_url", image_url: { url: urlTempFile } }
+            ]
+        }
+    ],
+    max_tokens: 300,
+});
+
+let datosExtraidos;
+try {
+    datosExtraidos = response.choices[0].message.content;  // 🔹 OpenAI ya devuelve JSON sin necesidad de `JSON.parse()`
+} catch (error) {
+    console.error("❌ OpenAI devolvió una respuesta inesperada:", response.choices[0].message.content);
+    return res.status(500).json({ error: "Error procesando la imagen. Intente con otra imagen o contacte a soporte." });
+}
 
 
 
