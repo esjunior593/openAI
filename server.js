@@ -27,7 +27,7 @@ const db = mysql.createPool({
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // Ruta para procesar comprobantes desde Builder Bot
-app.post('/procesar-comprobante', async (req, res) => {
+app.post('/procesar', async (req, res) => {
     try {
         const { urlTempFile, from, fullDate } = req.body;
         if (!urlTempFile) {
