@@ -38,50 +38,28 @@ app.post('/procesar', async (req, res) => {
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: [
-                { role: "system", content: "Eres un asistente de IA que extrae información de comprobantes de pago." },
+                { role: "system", content: "Eres un asistente experto en extraer información de comprobantes de pago. Devuelve solo un JSON con los datos requeridos, sin texto adicional." },
                 { 
                     role: "user", 
                     content: [
-                        { type: "text", text: "Extrae la siguiente información del comprobante de pago en la imagen: Documento, Valor, Beneficiario, Banco, Tipo de pago." },
+                        { type: "text", text: `Extrae la siguiente información del comprobante de pago en la imagen y devuélvelo en formato JSON:
+                            {
+                                "documento": "Número exacto del comprobante o transacción sin palabras adicionales",
+                                "valor": "Monto del pago en formato numérico con dos decimales",
+                                "beneficiario": "Nombre del remitente o destinatario del pago",
+                                "banco": "Nombre del banco que emitió el comprobante",
+                                "tipo": "Indicar 'Depósito' o 'Transferencia' según el comprobante"
+                            }
+                            Devuelve solo el JSON, sin explicaciones ni texto adicional.
+                        `},
                         { type: "image_url", image_url: { url: urlTempFile } }
                     ]
                 }
             ],
             max_tokens: 300,
         });
-
-        let datosExtraidos;
-try {
-    // Intenta parsear como JSON
-    datosExtraidos = JSON.parse(response.choices[0].message.content);
-} catch (error) {
-    // Si OpenAI devuelve texto en lugar de JSON, procesarlo manualmente
-    console.log("📩 Respuesta de OpenAI:", response.choices[0].message.content);
-
-    const texto = response.choices[0].message.content;
-
-    // Extraer manualmente los datos desde el texto
-    let documento = texto.match(/Documento\**:\**\s*(.+)/i)?.[1] || "Desconocido";
-
-// Extraer solo el número del documento, ignorando palabras como "Comprobante Nro."
-documento = documento.replace(/[^0-9]+/g, "").trim(); 
-    const valor = texto.match(/Valor\**:\**\s*\$(\d+\.\d{2})/i)?.[1] || "0.00";
-    const beneficiario = texto.match(/Beneficiario\**:\**\s*(.+)/i)?.[1] || "Desconocido";
-    const banco = texto.match(/Banco\**:\**\s*(.+)/i)?.[1] || "Desconocido";
-    let tipo = texto.match(/Tipo de pago\**:\**\s*(.+)/i)?.[1] || "Desconocido";
-
-// Normalizar el valor de tipo para que coincida con la base de datos
-if (tipo.toLowerCase().includes("transferencia")) {
-    tipo = "Transferencia";
-} else if (tipo.toLowerCase().includes("depósito")) {
-    tipo = "Depósito";
-} else {
-    tipo = "Desconocido"; // Evita errores si OpenAI no reconoce el tipo
-}
-
-    // Formatear los datos extraídos
-    datosExtraidos = { documento, valor, beneficiario, banco, tipo };
-}
+        
+        const datosExtraidos = JSON.parse(response.choices[0].message.content);
 
 
 
