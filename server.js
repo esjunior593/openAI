@@ -112,12 +112,17 @@ app.post('/procesar', async (req, res) => {
             // 🔹 Convertir fullDate a formato 'YYYY-MM-DD HH:mm:ss' para MySQL
             const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss");
 
+            console.log("📥 Intentando guardar en MySQL:", datosExtraidos);
 
             // 🔹 Insertar en la base de datos si no existe
             db.query('INSERT INTO comprobantes (documento, valor, beneficiario, fecha, tipo, banco) VALUES (?, ?, ?, ?, ?, ?)',
-                [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.beneficiario || "Desconocido", fullDate, datosExtraidos.tipo, datosExtraidos.banco],
+                [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.beneficiario || "Desconocido", fechaFormateada, datosExtraidos.tipo, datosExtraidos.banco],
                 (err, result) => {
-                    if (err) return res.status(500).json({ error: err.message });
+                    if (err) {
+                        console.error("❌ Error en la inserción en MySQL:", err);
+                        return res.status(500).json({ error: err.message });
+                    }
+                    console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
                     res.json({ mensaje: `✅ Pago registrado exitosamente. Documento: ${datosExtraidos.documento}.` });
                 }
             );
