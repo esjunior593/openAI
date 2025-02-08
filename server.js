@@ -93,11 +93,17 @@ app.post('/procesar', async (req, res) => {
 
         const datosExtraidos = JSON.parse(response.choices[0].message.content);
 
-
         // 🔹 Validar si OpenAI extrajo correctamente la información
-        if (!datosExtraidos.documento || !datosExtraidos.valor || !datosExtraidos.banco || !datosExtraidos.tipo) {
-            return res.json({ mensaje: 'Si tiene algún problema con su servicio escriba al número de Soporte por favor.\n\n👉 *Soporte:* 0980757208 👈' });
-        }
+if (!datosExtraidos.documento || !datosExtraidos.valor || !datosExtraidos.banco || !datosExtraidos.tipo) {
+    console.log("🚨 No se detectó un comprobante de pago en la imagen. Enviando mensaje de soporte.");
+    
+    return res.json({ 
+        mensaje: "❌ No se detectó un comprobante de pago en la imagen.\n\n" +
+                 "Si tiene algún problema con su servicio, escriba al número de Soporte por favor.\n\n" +
+                 "👉 *Soporte:* 0980757208 👈"
+    });
+}
+
 
         // 🔹 Verificar si el número de documento ya existe en la base de datos
         db.query('SELECT * FROM comprobantes WHERE documento = ?', [datosExtraidos.documento], (err, results) => {
