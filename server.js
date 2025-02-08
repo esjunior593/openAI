@@ -103,6 +103,15 @@ if (!datosExtraidos.documento || !datosExtraidos.valor || !datosExtraidos.banco 
     });
 }
 
+// 🔹 Verificar si el comprobante está incompleto
+if (!datosExtraidos.documento || !datosExtraidos.valor) {
+    console.log("⏳ Comprobante con información incompleta. Enviando mensaje de espera.");
+    
+    return res.json({ 
+        mensaje: "⏳ *Estamos verificando su pago, un momento por favor...*"
+    });
+}
+
 
         // 🔹 Verificar si el número de documento ya existe en la base de datos
         db.query('SELECT * FROM comprobantes WHERE documento = ?', [datosExtraidos.documento], (err, results) => {
