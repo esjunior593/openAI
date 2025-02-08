@@ -52,11 +52,25 @@ app.post('/procesar', async (req, res) => {
 
         let datosExtraidos;
 try {
+    // Intenta parsear como JSON
     datosExtraidos = JSON.parse(response.choices[0].message.content);
 } catch (error) {
-    console.error("❌ Error al parsear JSON de OpenAI:", response.choices[0].message.content);
-    return res.status(500).json({ error: "Respuesta inesperada de OpenAI. Verifica tu API Key y la imagen enviada." });
+    // Si OpenAI devuelve texto en lugar de JSON, procesarlo manualmente
+    console.log("📩 Respuesta de OpenAI:", response.choices[0].message.content);
+
+    const texto = response.choices[0].message.content;
+
+    // Extraer manualmente los datos desde el texto
+    const documento = texto.match(/Documento\**:\**\s*(.+)/i)?.[1] || "Desconocido";
+    const valor = texto.match(/Valor\**:\**\s*\$(\d+\.\d{2})/i)?.[1] || "0.00";
+    const beneficiario = texto.match(/Beneficiario\**:\**\s*(.+)/i)?.[1] || "Desconocido";
+    const banco = texto.match(/Banco\**:\**\s*(.+)/i)?.[1] || "Desconocido";
+    const tipo = texto.match(/Tipo de pago\**:\**\s*(.+)/i)?.[1] || "Desconocido";
+
+    // Formatear los datos extraídos
+    datosExtraidos = { documento, valor, beneficiario, banco, tipo };
 }
+
 
 
         // Validar si OpenAI extrajo correctamente la información
