@@ -86,7 +86,8 @@ app.post('/procesar', async (req, res) => {
         console.log("📩 Respuesta de OpenAI:", JSON.stringify(response, null, 2));
         
 
-        const datosExtraidos = response.choices[0].message.content;
+        const datosExtraidos = JSON.parse(response.choices[0].message.content);
+
 
         // 🔹 Validar si OpenAI extrajo correctamente la información
         if (!datosExtraidos.documento || !datosExtraidos.valor || !datosExtraidos.banco || !datosExtraidos.tipo) {
