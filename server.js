@@ -136,25 +136,26 @@ app.post('/procesar', async (req, res) => {
 
             // 🔹 Insertar en la base de datos si no existe
             // 🔹 Insertar en la base de datos con el número de WhatsApp
-db.query('INSERT INTO comprobantes (documento, valor, beneficiario, fecha, tipo, banco, whatsapp) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.beneficiario || "Desconocido", fechaFormateada, datosExtraidos.tipo, datosExtraidos.banco, from],
-    (err, result) => {
-        if (err) {
-            console.error("❌ Error en la inserción en MySQL:", err);
-            return res.status(500).json({ error: err.message });
-        }
-        console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
-
-        // 🔹 Mensaje de confirmación con el número del remitente
-        const mensaje = `✅ Comprobante registrado exitosamente desde el número *${from}*.\n\n` +
-                        `📌 *Número:* ${datosExtraidos.documento}\n` +
-                        `📞 *Enviado desde:* ${from}\n` +
-                        `📅 *Fecha de envío:* ${fechaFormateada}\n` +
-                        `💰 *Monto:* $${datosExtraidos.valor}`;
-
-        res.json({ mensaje });
-    }
-);
+            db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.remitente || "Desconocido", fechaFormateada, datosExtraidos.tipo, datosExtraidos.banco, from],
+                (err, result) => {
+                    if (err) {
+                        console.error("❌ Error en la inserción en MySQL:", err);
+                        return res.status(500).json({ error: err.message });
+                    }
+                    console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
+            
+                    // 🔹 Mensaje de confirmación con el número del remitente
+                    const mensaje = `✅ Comprobante registrado exitosamente desde el número *${from}*.\n\n` +
+                                    `📌 *Número:* ${datosExtraidos.documento}\n` +
+                                    `📞 *Enviado desde:* ${from}\n` +
+                                    `👤 *Remitente:* ${datosExtraidos.remitente}\n` +  // Ahora muestra el remitente correctamente
+                                    `📅 *Fecha de envío:* ${fechaFormateada}\n` +
+                                    `💰 *Monto:* $${datosExtraidos.valor}`;
+            
+                    res.json({ mensaje });
+                }
+            );
         });
 
     } catch (error) {
