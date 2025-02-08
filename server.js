@@ -36,7 +36,7 @@ app.post('/procesar', async (req, res) => {
         
         // Solicitar a OpenAI que analice la imagen y devuelva datos estructurados
         const response = await openai.chat.completions.create({
-            model: "gpt-4-vision-preview",
+            model: "gpt-4-turbo",
             messages: [
                 { role: "system", content: "Eres un asistente de IA que extrae información de comprobantes de pago." },
                 { role: "user", content: `Extrae la siguiente información del comprobante de pago en la imagen:
