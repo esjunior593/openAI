@@ -111,10 +111,10 @@ app.post('/procesar', async (req, res) => {
                 
                 // 🔹 Mensaje indicando que el comprobante ya fue usado
                 const mensaje = `🚫 Este comprobante ya ha sido presentado por el número *${numeroOculto}*.\n\n` +
-                                `📌 **Número:** ${results[0].documento}\n` +
-                                `📞 **Enviado desde:** ${numeroOculto}\n` +
-                                `📅 **Fecha de envío:** ${results[0].fecha}\n` +
-                                `💰 **Monto:** $${results[0].valor}`;
+                                `📌 *Número:* ${results[0].documento}\n` +
+                                `📞 *Enviado desde:* ${numeroOculto}\n` +
+                                `📅 *Fecha de envío:* ${fechaFormateada}\n` +
+                                `💰 *Monto:* $${results[0].valor}`;
             
                 return res.json({ mensaje });
             }
