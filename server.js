@@ -61,7 +61,10 @@ try {
     const texto = response.choices[0].message.content;
 
     // Extraer manualmente los datos desde el texto
-    const documento = texto.match(/Documento\**:\**\s*(.+)/i)?.[1] || "Desconocido";
+    let documento = texto.match(/Documento\**:\**\s*(.+)/i)?.[1] || "Desconocido";
+
+// Extraer solo el número del documento, ignorando palabras como "Comprobante Nro."
+documento = documento.replace(/[^0-9]+/g, "").trim(); 
     const valor = texto.match(/Valor\**:\**\s*\$(\d+\.\d{2})/i)?.[1] || "0.00";
     const beneficiario = texto.match(/Beneficiario\**:\**\s*(.+)/i)?.[1] || "Desconocido";
     const banco = texto.match(/Banco\**:\**\s*(.+)/i)?.[1] || "Desconocido";
