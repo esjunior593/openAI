@@ -74,7 +74,7 @@ app.post('/procesar', async (req, res) => {
                             {
                                 "documento": "Número exacto del comprobante o transacción sin palabras adicionales",
                                 "valor": "Monto del pago en formato numérico con dos decimales",
-                                "beneficiario": "Nombre del remitente o destinatario del pago",
+                               "remitente": "Nombre de la persona que realizó la transferencia (Cuenta de Origen)",
                                 "banco": "Nombre del banco que emitió el comprobante",
                                 "tipo": "Indicar 'Depósito' o 'Transferencia' según el comprobante"
                             }
