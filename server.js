@@ -60,10 +60,6 @@ app.post('/procesar', async (req, res) => {
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
             response_format: { type: "json_object" },
-
-
-        
-
             messages: [
                 { role: "system", content: "Eres un asistente experto en extraer información de comprobantes de pago. Devuelve solo un JSON con los datos requeridos, sin texto adicional." },
                 { 
@@ -79,12 +75,16 @@ app.post('/procesar', async (req, res) => {
                             }
                             Devuelve solo el JSON, sin explicaciones ni texto adicional.
                         `},
-                        { type: "image_url", image_url: { url: base64Image.url } }  // 🔹 Aquí está la corrección
+                        { type: "image_url", image_url: { url: base64Image.url } }
                     ]
                 }
             ],
             max_tokens: 300,
         });
+        
+        // 🔹 Mostrar la respuesta de OpenAI en los logs de Railway
+        console.log("📩 Respuesta de OpenAI:", JSON.stringify(response, null, 2));
+        
 
         const datosExtraidos = response.choices[0].message.content;
 
