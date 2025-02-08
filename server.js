@@ -39,14 +39,13 @@ app.post('/procesar', async (req, res) => {
             model: "gpt-4o",
             messages: [
                 { role: "system", content: "Eres un asistente de IA que extrae información de comprobantes de pago." },
-                { role: "user", content: `Extrae la siguiente información del comprobante de pago en la imagen:
-                    - Documento (Número de transacción, referencia, No. comprobante, etc.)
-                    - Valor ($ del pago, monto, valor)
-                    - Beneficiario (nombre del remitente en caso de depósito o transferencia)
-                    - Banco (identificar el banco basado en el texto)
-                    - Tipo de pago (Depósito o Transferencia, según la apariencia del documento)
-                    Devuélvelo en formato JSON sin texto adicional.
-                    Imagen: ${urlTempFile}` }
+                { 
+                    role: "user", 
+                    content: [
+                        { type: "text", text: "Extrae la siguiente información del comprobante de pago en la imagen: Documento, Valor, Beneficiario, Banco, Tipo de pago." },
+                        { type: "image_url", image_url: { url: urlTempFile } }
+                    ]
+                }
             ],
             max_tokens: 300,
         });
