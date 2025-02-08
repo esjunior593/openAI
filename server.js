@@ -51,7 +51,14 @@ app.post('/procesar', async (req, res) => {
             max_tokens: 300,
         });
 
-        const datosExtraidos = JSON.parse(response.choices[0].message.content);
+        let datosExtraidos;
+try {
+    datosExtraidos = JSON.parse(response.choices[0].message.content);
+} catch (error) {
+    console.error("❌ Error al parsear JSON de OpenAI:", response.choices[0].message.content);
+    return res.status(500).json({ error: "Respuesta inesperada de OpenAI. Verifica tu API Key y la imagen enviada." });
+}
+
 
         // Validar si OpenAI extrajo correctamente la información
         if (!datosExtraidos.documento || !datosExtraidos.valor || !datosExtraidos.banco || !datosExtraidos.tipo) {
