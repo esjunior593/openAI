@@ -59,7 +59,9 @@ app.post('/procesar', async (req, res) => {
         // 🔹 Enviar a OpenAI con Base64 en lugar de URL
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
-            response_format: "json",  
+            response_format: { type: "json" },  // 🔹 Corrección aquí
+        
+
             messages: [
                 { role: "system", content: "Eres un asistente experto en extraer información de comprobantes de pago. Devuelve solo un JSON con los datos requeridos, sin texto adicional." },
                 { 
