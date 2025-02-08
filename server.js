@@ -28,13 +28,14 @@ const getBase64FromUrl = async (imageUrl) => {
     try {
         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
         const base64 = Buffer.from(response.data, 'binary').toString('base64');
-        const mimeType = response.headers['content-type']; // Detectar el tipo de imagen
-        return `data:${mimeType};base64,${base64}`;
+        const mimeType = response.headers['content-type']; // Obtener el tipo MIME de la imagen
+        return { url: `data:${mimeType};base64,${base64}` };  // 🔹 Retorna un objeto con la clave correcta
     } catch (error) {
         console.error("❌ Error al convertir imagen a Base64:", error.message);
         return null;
     }
 };
+
 
 
 // Configuración de OpenAI
@@ -74,7 +75,7 @@ app.post('/procesar', async (req, res) => {
                             }
                             Devuelve solo el JSON, sin explicaciones ni texto adicional.
                         `},
-                        { type: "image_url", image_url: base64Image }  // 🔹 Ahora usa Base64 en lugar de URL
+                        { type: "image_url", image_url: { url: base64Image.url } }  // 🔹 Aquí está la corrección
                     ]
                 }
             ],
@@ -111,6 +112,7 @@ app.post('/procesar', async (req, res) => {
         res.status(500).json({ error: "Error interno del servidor." });
     }
 });
+
 
 
 app.listen(PORT, () => {
