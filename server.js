@@ -23,8 +23,23 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
+
+const getBase64FromUrl = async (imageUrl) => {
+    try {
+        const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+        const base64 = Buffer.from(response.data, 'binary').toString('base64');
+        const mimeType = response.headers['content-type']; // Detectar el tipo de imagen
+        return `data:${mimeType};base64,${base64}`;
+    } catch (error) {
+        console.error("❌ Error al convertir imagen a Base64:", error.message);
+        return null;
+    }
+};
+
+
 // Configuración de OpenAI
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
 
 // Ruta para procesar comprobantes desde Builder Bot
 app.post('/procesar', async (req, res) => {
@@ -33,58 +48,55 @@ app.post('/procesar', async (req, res) => {
         if (!urlTempFile) {
             return res.status(400).json({ mensaje: 'No se recibió una URL de imagen' });
         }
-        
-        // Solicitar a OpenAI que analice la imagen y devuelva datos estructurados
-        // Solicitar a OpenAI que analice la imagen y devuelva datos estructurados
-const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    response_format: "json",  // 🔴 Esto obliga a OpenAI a devolver solo JSON
-    messages: [
-        { role: "system", content: "Eres un asistente experto en extraer información de comprobantes de pago. Devuelve solo un JSON con los datos requeridos, sin texto adicional." },
-        { 
-            role: "user", 
-            content: [
-                { type: "text", text: `Extrae la siguiente información del comprobante de pago en la imagen y devuélvelo en formato JSON:
-                    {
-                        "documento": "Número exacto del comprobante o transacción sin palabras adicionales",
-                        "valor": "Monto del pago en formato numérico con dos decimales",
-                        "beneficiario": "Nombre del remitente o destinatario del pago",
-                        "banco": "Nombre del banco que emitió el comprobante",
-                        "tipo": "Indicar 'Depósito' o 'Transferencia' según el comprobante"
-                    }
-                    Devuelve solo el JSON, sin explicaciones ni texto adicional.
-                `},
-                { type: "image_url", image_url: { url: urlTempFile } }
-            ]
+
+        // 🔹 Convertir la imagen a Base64
+        const base64Image = await getBase64FromUrl(urlTempFile);
+        if (!base64Image) {
+            return res.status(400).json({ mensaje: 'Error al procesar la imagen. Intente con otra URL.' });
         }
-    ],
-    max_tokens: 300,
-});
 
-let datosExtraidos;
-try {
-    datosExtraidos = response.choices[0].message.content;  // 🔹 OpenAI ya devuelve JSON sin necesidad de `JSON.parse()`
-} catch (error) {
-    console.error("❌ OpenAI devolvió una respuesta inesperada:", response.choices[0].message.content);
-    return res.status(500).json({ error: "Error procesando la imagen. Intente con otra imagen o contacte a soporte." });
-}
+        // 🔹 Enviar a OpenAI con Base64 en lugar de URL
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            response_format: "json",  
+            messages: [
+                { role: "system", content: "Eres un asistente experto en extraer información de comprobantes de pago. Devuelve solo un JSON con los datos requeridos, sin texto adicional." },
+                { 
+                    role: "user", 
+                    content: [
+                        { type: "text", text: `Extrae la siguiente información del comprobante de pago en la imagen y devuélvelo en formato JSON:
+                            {
+                                "documento": "Número exacto del comprobante o transacción sin palabras adicionales",
+                                "valor": "Monto del pago en formato numérico con dos decimales",
+                                "beneficiario": "Nombre del remitente o destinatario del pago",
+                                "banco": "Nombre del banco que emitió el comprobante",
+                                "tipo": "Indicar 'Depósito' o 'Transferencia' según el comprobante"
+                            }
+                            Devuelve solo el JSON, sin explicaciones ni texto adicional.
+                        `},
+                        { type: "image_url", image_url: base64Image }  // 🔹 Ahora usa Base64 en lugar de URL
+                    ]
+                }
+            ],
+            max_tokens: 300,
+        });
 
+        const datosExtraidos = response.choices[0].message.content;
 
-
-        // Validar si OpenAI extrajo correctamente la información
+        // 🔹 Validar si OpenAI extrajo correctamente la información
         if (!datosExtraidos.documento || !datosExtraidos.valor || !datosExtraidos.banco || !datosExtraidos.tipo) {
             return res.json({ mensaje: 'No se pudo extraer información válida del comprobante. Contacte a soporte: 09999999' });
         }
 
-        // Verificar si el número de documento ya existe en la base de datos
+        // 🔹 Verificar si el número de documento ya existe en la base de datos
         db.query('SELECT * FROM comprobantes WHERE documento = ?', [datosExtraidos.documento], (err, results) => {
             if (err) return res.status(500).json({ error: err.message });
-            
+
             if (results.length > 0) {
                 return res.json({ mensaje: `🚫 Este comprobante ya ha sido registrado: ${datosExtraidos.documento}.` });
             }
-            
-            // Insertar en la base de datos si no existe
+
+            // 🔹 Insertar en la base de datos si no existe
             db.query('INSERT INTO comprobantes (documento, valor, beneficiario, fecha, tipo, banco) VALUES (?, ?, ?, ?, ?, ?)',
                 [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.beneficiario || "Desconocido", fullDate, datosExtraidos.tipo, datosExtraidos.banco],
                 (err, result) => {
@@ -93,11 +105,13 @@ try {
                 }
             );
         });
-        
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("❌ Error general:", error.message);
+        res.status(500).json({ error: "Error interno del servidor." });
     }
 });
+
 
 app.listen(PORT, () => {
     console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
