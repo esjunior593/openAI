@@ -59,7 +59,8 @@ app.post('/procesar', async (req, res) => {
         // 🔹 Enviar a OpenAI con Base64 en lugar de URL
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
-            response_format: { type: "json" },  // 🔹 Corrección aquí
+            response_format: "json_object",
+
         
 
             messages: [
