@@ -3,6 +3,8 @@ const mysql = require('mysql2');
 const cors = require('cors');
 const axios = require('axios');
 const OpenAI = require('openai');
+const moment = require('moment'); // Asegúrate de instalar moment.js con npm
+
 require('dotenv').config();
 
 const app = express();
@@ -47,7 +49,7 @@ app.post('/procesar', async (req, res) => {
     try {
         // 🔹 Imprimir todo el body para ver qué datos envía WhatsApp
         console.log("📥 Solicitud recibida desde WhatsApp:", req.body);
-        
+
         const { urlTempFile, from, fullDate } = req.body;
         if (!urlTempFile) {
             return res.status(400).json({ mensaje: 'No se recibió una URL de imagen' });
@@ -104,6 +106,12 @@ app.post('/procesar', async (req, res) => {
             if (results.length > 0) {
                 return res.json({ mensaje: `🚫 Este comprobante ya ha sido registrado: ${datosExtraidos.documento}.` });
             }
+
+            const moment = require('moment'); // Requiere instalar moment.js
+
+// 🔹 Convertir fullDate a formato 'YYYY-MM-DD'
+const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD");
+
 
             // 🔹 Insertar en la base de datos si no existe
             db.query('INSERT INTO comprobantes (documento, valor, beneficiario, fecha, tipo, banco) VALUES (?, ?, ?, ?, ?, ?)',
