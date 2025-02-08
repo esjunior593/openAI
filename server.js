@@ -108,6 +108,11 @@ app.post('/procesar', async (req, res) => {
                 
                 // 🔹 Formatear el número para mostrar solo los últimos 5 dígitos
                 const numeroOculto = `09XXX${results[0].whatsapp.slice(-5)}`;
+
+                const moment = require('moment'); // Requiere instalar moment.js
+
+                // 🔹 Convertir fullDate a formato 'YYYY-MM-DD HH:mm:ss' para MySQL
+                const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss");
                 
                 // 🔹 Mensaje indicando que el comprobante ya fue usado
                 const mensaje = `🚫 Este comprobante ya ha sido presentado por el número *${numeroOculto}*.\n\n` +
