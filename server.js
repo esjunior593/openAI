@@ -104,28 +104,52 @@ app.post('/procesar', async (req, res) => {
             if (err) return res.status(500).json({ error: err.message });
 
             if (results.length > 0) {
-                return res.json({ mensaje: `🚫 Este comprobante ya ha sido registrado: ${datosExtraidos.documento}.` });
+                console.log("🚨 Comprobante ya registrado:", datosExtraidos.documento);
+                
+                // 🔹 Formatear el número para mostrar solo los últimos 5 dígitos
+                const numeroOculto = `09XXX${results[0].whatsapp.slice(-5)}`;
+                
+                // 🔹 Mensaje indicando que el comprobante ya fue usado
+                const mensaje = `🚫 Este comprobante ya ha sido presentado por el número *${numeroOculto}*.\n\n` +
+                                `📌 **Número:** ${results[0].documento}\n` +
+                                `📞 **Enviado desde:** ${numeroOculto}\n` +
+                                `📅 **Fecha de envío:** ${results[0].fecha}\n` +
+                                `💰 **Monto:** $${results[0].valor}`;
+            
+                return res.json({ mensaje });
             }
 
             const moment = require('moment'); // Requiere instalar moment.js
 
             // 🔹 Convertir fullDate a formato 'YYYY-MM-DD HH:mm:ss' para MySQL
             const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss");
+            
+            // 🔹 Formatear el número de WhatsApp para mostrar solo los últimos 5 dígitos
+            const numeroOculto = `09XXX${from.slice(-5)}`; 
 
             console.log("📥 Intentando guardar en MySQL:", datosExtraidos);
 
             // 🔹 Insertar en la base de datos si no existe
-            db.query('INSERT INTO comprobantes (documento, valor, beneficiario, fecha, tipo, banco) VALUES (?, ?, ?, ?, ?, ?)',
-                [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.beneficiario || "Desconocido", fechaFormateada, datosExtraidos.tipo, datosExtraidos.banco],
-                (err, result) => {
-                    if (err) {
-                        console.error("❌ Error en la inserción en MySQL:", err);
-                        return res.status(500).json({ error: err.message });
-                    }
-                    console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
-                    res.json({ mensaje: `✅ Pago registrado exitosamente. Documento: ${datosExtraidos.documento}.` });
-                }
-            );
+            // 🔹 Insertar en la base de datos con el número de WhatsApp
+db.query('INSERT INTO comprobantes (documento, valor, beneficiario, fecha, tipo, banco, whatsapp) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.beneficiario || "Desconocido", fechaFormateada, datosExtraidos.tipo, datosExtraidos.banco, from],
+    (err, result) => {
+        if (err) {
+            console.error("❌ Error en la inserción en MySQL:", err);
+            return res.status(500).json({ error: err.message });
+        }
+        console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
+
+        // 🔹 Mensaje de confirmación con el número del remitente
+        const mensaje = `✅ Comprobante registrado exitosamente desde el número *${from}*.\n\n` +
+                        `📌 *Número:* ${datosExtraidos.documento}\n` +
+                        `📞 *Enviado desde:* ${from}\n` +
+                        `📅 *Fecha de envío:* ${fechaFormateada}\n` +
+                        `💰 *Monto:* $${datosExtraidos.valor}`;
+
+        res.json({ mensaje });
+    }
+);
         });
 
     } catch (error) {
