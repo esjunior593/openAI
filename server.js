@@ -96,7 +96,7 @@ app.post('/procesar', async (req, res) => {
 
         // 🔹 Validar si OpenAI extrajo correctamente la información
         if (!datosExtraidos.documento || !datosExtraidos.valor || !datosExtraidos.banco || !datosExtraidos.tipo) {
-            return res.json({ mensaje: 'No se pudo extraer información válida del comprobante. Contacte a soporte: 09999999' });
+            return res.json({ mensaje: 'Si tiene algún problema con su servicio escriba al número de Soporte por favor.\n\n👉 *Soporte:* 0980757208 👈' });
         }
 
         // 🔹 Verificar si el número de documento ya existe en la base de datos
