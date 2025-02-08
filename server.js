@@ -45,6 +45,9 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // Ruta para procesar comprobantes desde Builder Bot
 app.post('/procesar', async (req, res) => {
     try {
+        // 🔹 Imprimir todo el body para ver qué datos envía WhatsApp
+        console.log("📥 Solicitud recibida desde WhatsApp:", req.body);
+        
         const { urlTempFile, from, fullDate } = req.body;
         if (!urlTempFile) {
             return res.status(400).json({ mensaje: 'No se recibió una URL de imagen' });
