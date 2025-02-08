@@ -65,7 +65,16 @@ try {
     const valor = texto.match(/Valor\**:\**\s*\$(\d+\.\d{2})/i)?.[1] || "0.00";
     const beneficiario = texto.match(/Beneficiario\**:\**\s*(.+)/i)?.[1] || "Desconocido";
     const banco = texto.match(/Banco\**:\**\s*(.+)/i)?.[1] || "Desconocido";
-    const tipo = texto.match(/Tipo de pago\**:\**\s*(.+)/i)?.[1] || "Desconocido";
+    let tipo = texto.match(/Tipo de pago\**:\**\s*(.+)/i)?.[1] || "Desconocido";
+
+// Normalizar el valor de tipo para que coincida con la base de datos
+if (tipo.toLowerCase().includes("transferencia")) {
+    tipo = "Transferencia";
+} else if (tipo.toLowerCase().includes("depósito")) {
+    tipo = "Depósito";
+} else {
+    tipo = "Desconocido"; // Evita errores si OpenAI no reconoce el tipo
+}
 
     // Formatear los datos extraídos
     datosExtraidos = { documento, valor, beneficiario, banco, tipo };
