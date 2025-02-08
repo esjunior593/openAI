@@ -109,8 +109,8 @@ app.post('/procesar', async (req, res) => {
 
             const moment = require('moment'); // Requiere instalar moment.js
 
-// 🔹 Convertir fullDate a formato 'YYYY-MM-DD'
-const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD");
+            // 🔹 Convertir fullDate a formato 'YYYY-MM-DD HH:mm:ss' para MySQL
+            const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss");
 
 
             // 🔹 Insertar en la base de datos si no existe
