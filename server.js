@@ -98,8 +98,7 @@ if (!datosExtraidos.documento || !datosExtraidos.valor || !datosExtraidos.banco 
     console.log("🚨 No se detectó un comprobante de pago en la imagen. Enviando mensaje de soporte.");
     
     return res.json({ 
-        mensaje: "❌ No se detectó un comprobante de pago en la imagen.\n\n" +
-                 "Si tiene algún problema con su servicio, escriba al número de Soporte por favor.\n\n" +
+        mensaje: "Si tiene algún problema con su servicio, escriba al número de Soporte por favor.\n\n" +
                  "👉 *Soporte:* 0980757208 👈"
     });
 }
