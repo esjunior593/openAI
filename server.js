@@ -145,7 +145,7 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
 
                 // 🔹 Mensaje indicando que el comprobante ya fue usado
                 
-                const mensaje = `🚫 Este comprobante ya ha sido presentado por el número *${numeroOculto}*.\n\n` +
+                const mensaje = `⛔ Este comprobante ya ha sido presentado por el número *${numeroOculto}*.\n\n` +
                                 `📌 *Número:* ${results[0].documento}\n` +
                                 `🪀 *Enviado por:* ${numeroOculto}\n` +
                                 `🏷️ *Fecha:* ${fechaWhatsApp}\n` +
