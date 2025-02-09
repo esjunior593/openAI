@@ -130,13 +130,14 @@ if (!datosExtraidos.documento || !datosExtraidos.valor) {
                 const moment = require('moment'); // Requiere instalar moment.js
 
                 // 🔹 Convertir fullDate a formato 'YYYY-MM-DD HH:mm:ss' para MySQL
-                const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss");
-                
+                const fechaMySQL = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm:ss"]).format("YYYY-MM-DD HH:mm:ss");
+const fechaWhatsApp = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm:ss"]).format("DD-MM-YYYY HH:mm:ss");
+
                 // 🔹 Mensaje indicando que el comprobante ya fue usado
                 const mensaje = `🚫 Este comprobante ya ha sido presentado por el número *${numeroOculto}*.\n\n` +
                                 `📌 *Número:* ${results[0].documento}\n` +
                                 `📞 *Enviado desde:* ${numeroOculto}\n` +
-                                `📅 *Fecha de envío:* ${fechaFormateada}\n` +
+                                `📅 *Fecha de envío:* ${fechaWhatsApp}\n` +
                                 `💰 *Monto:* $${results[0].valor}`;
             
                 return res.json({ mensaje });
@@ -145,8 +146,9 @@ if (!datosExtraidos.documento || !datosExtraidos.valor) {
             const moment = require('moment'); // Requiere instalar moment.js
 
             // 🔹 Convertir fullDate a formato 'YYYY-MM-DD HH:mm:ss' para MySQL
-            const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss");
-            
+            const fechaMySQL = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm:ss"]).format("YYYY-MM-DD HH:mm:ss");
+const fechaWhatsApp = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm:ss"]).format("DD-MM-YYYY HH:mm:ss");
+
             // 🔹 Formatear el número de WhatsApp para mostrar solo los últimos 5 dígitos
             const numeroOculto = `09XXX${from.slice(-5)}`; 
 
@@ -168,7 +170,7 @@ if (!datosExtraidos.documento || !datosExtraidos.valor) {
                                     `📌 *Número:* ${datosExtraidos.documento}\n` +
                                     `📞 *Enviado desde:* ${from}\n` +
                                     `👤 *Remitente:* ${datosExtraidos.remitente}\n` +  // Ahora muestra el remitente correctamente
-                                    `📅 *Fecha de envío:* ${fechaFormateada}\n` +
+                                    `📅 *Fecha de envío:* ${fechaWhatsApp}\n` +
                                     `💰 *Monto:* $${datosExtraidos.valor}`;
             
                     res.json({ mensaje });
