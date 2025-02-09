@@ -75,6 +75,8 @@ app.post('/procesar', async (req, res) => {
                                 "documento": "Número exacto del comprobante o transacción sin palabras adicionales. 
 El número de comprobante puede aparecer con etiquetas como 'No.', 'Número:', 'Comprobante:', 'Transacción:', 'REF:', 'Referencia:', 'ID:', 'Registro:', 'Código:', o similares. 
 Si hay más de un número similar, prioriza el que esté junto a palabras clave como 'Comprobante', 'Referencia' o 'REF'. 
+Si el comprobante pertenece a 'Banco del Pacífico', el número de documento suele aparecer después de 'REF:'. 
+En este caso, extrae el número que sigue inmediatamente a esta etiqueta sin incluir letras ni espacios adicionales. 
 Si el comprobante pertenece a 'Tu Banco Banco Aquí', el número de documento está inmediatamente después de la fecha en formato DD/MM/YYYY HH:MM:SS. 
 Encuentra la fecha en la imagen y extrae el primer número que aparece justo después.",
                                 "valor": "Monto del pago en formato numérico con dos decimales",
