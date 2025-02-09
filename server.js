@@ -3,7 +3,7 @@ const mysql = require('mysql2');
 const cors = require('cors');
 const axios = require('axios');
 const OpenAI = require('openai');
-const moment = require('moment'); // Asegúrate de instalar moment.js con npm
+const moment = require('moment');
 
 require('dotenv').config();
 
@@ -25,12 +25,13 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
+// Función para convertir imagen a Base64
 const getBase64FromUrl = async (imageUrl) => {
     try {
         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
         const base64 = Buffer.from(response.data, 'binary').toString('base64');
-        const mimeType = response.headers['content-type']; 
-        return { url: `data:${mimeType};base64,${base64}` }; 
+        const mimeType = response.headers['content-type'];
+        return { url: `data:${mimeType};base64,${base64}` };
     } catch (error) {
         console.error("❌ Error al convertir imagen a Base64:", error.message);
         return null;
@@ -40,7 +41,7 @@ const getBase64FromUrl = async (imageUrl) => {
 // Configuración de OpenAI
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Ruta para procesar comprobantes desde Builder Bot
+// Ruta para procesar comprobantes
 app.post('/procesar', async (req, res) => {
     try {
         console.log("📥 Solicitud recibida desde WhatsApp:", req.body);
@@ -71,11 +72,16 @@ app.post('/procesar', async (req, res) => {
             max_tokens: 10,
         });
 
-        const esEditado = JSON.parse(detectionResponse.choices[0].message.content);
+        let esEditado;
+        try {
+            esEditado = JSON.parse(detectionResponse.choices[0].message.content);
+        } catch (error) {
+            console.error("❌ Error al parsear la respuesta de detección de falsificaciones:", detectionResponse);
+            return res.json({ mensaje: "⚠️ No se pudo verificar si el comprobante es falso. Intente nuevamente o contacte soporte." });
+        }
 
         if (esEditado === true) {
             console.log("🚨 Se detectó un comprobante editado o falso.");
-
             return res.json({
                 mensaje: "🚨 *Alerta de comprobante falso*\n\n" +
                          "⚠️ Se ha detectado que esta imagen podría estar editada o manipulada.\n" +
@@ -110,18 +116,25 @@ app.post('/procesar', async (req, res) => {
             max_tokens: 300,
         });
 
-        console.log("📩 Respuesta de OpenAI:", JSON.stringify(response, null, 2));
-        const datosExtraidos = JSON.parse(response.choices[0].message.content);
+        // 🔹 Validar si la respuesta de OpenAI es JSON
+        let datosExtraidos;
+        try {
+            datosExtraidos = JSON.parse(response.choices[0].message.content);
+        } catch (error) {
+            console.error("❌ OpenAI devolvió un formato inesperado:", response.choices[0].message.content);
+            return res.json({ mensaje: "⚠️ Error al extraer información del comprobante. Intente nuevamente o contacte soporte." });
+        }
 
+        // 🔹 Verificar si los datos son válidos
         if (!datosExtraidos.documento || !datosExtraidos.valor || !datosExtraidos.banco || !datosExtraidos.tipo) {
             console.log("🚨 No se detectó un comprobante de pago en la imagen. Enviando mensaje de soporte.");
-
             return res.json({ 
                 mensaje: "Si tiene algún problema con su servicio, escriba al número de Soporte por favor.\n\n" +
                          "👉 *Soporte:* 0980757208 👈"
             });
         }
 
+        // 🔹 Verificar si el comprobante ya está registrado
         db.query('SELECT * FROM comprobantes WHERE documento = ?', [datosExtraidos.documento], (err, results) => {
             if (err) return res.status(500).json({ error: err.message });
 
@@ -143,14 +156,7 @@ app.post('/procesar', async (req, res) => {
                 (err, result) => {
                     if (err) return res.status(500).json({ error: err.message });
 
-                    res.json({ 
-                        mensaje: `✅ Comprobante registrado exitosamente desde el número *${from}*.\n\n` +
-                                 `📌 *Número:* ${datosExtraidos.documento}\n` +
-                                 `📞 *Enviado desde:* ${from}\n` +
-                                 `👤 *Remitente:* ${datosExtraidos.remitente}\n` +
-                                 `📅 *Fecha de envío:* ${moment(fullDate).format("DD/MM/YYYY HH:mm:ss")}\n` +
-                                 `💰 *Monto:* $${datosExtraidos.valor}`
-                    });
+                    res.json({ mensaje: `✅ Comprobante registrado exitosamente desde el número *${from}*.\n\n📌 *Número:* ${datosExtraidos.documento}\n📞 *Enviado desde:* ${from}\n👤 *Remitente:* ${datosExtraidos.remitente}\n📅 *Fecha de envío:* ${moment(fullDate).format("DD/MM/YYYY HH:mm:ss")}\n💰 *Monto:* $${datosExtraidos.valor}` });
                 }
             );
         });
