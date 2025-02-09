@@ -178,6 +178,7 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
    
 
  // 🔹 Lista de beneficiarios válidos con palabras clave separadas
+// 🔹 Lista de beneficiarios válidos
 const beneficiariosValidos = [
     ["AMELIA", "YADIRA", "RUIZ", "QUIMI"],
     ["NELISSA", "MAROLA", "QUINTERO", "QUIMI"]
@@ -185,11 +186,28 @@ const beneficiariosValidos = [
 
 const beneficiarioRecibido = datosExtraidos.beneficiario ? datosExtraidos.beneficiario.toUpperCase() : "";
 
-// 🔹 Función para verificar si al menos dos palabras coinciden
+// 🔹 Función para verificar beneficiarios con tolerancia a cortes de texto
 function esBeneficiarioValido(nombreRecibido) {
     return beneficiariosValidos.some(grupo => {
-        const coincidencias = grupo.filter(palabra => nombreRecibido.includes(palabra)).length;
-        return coincidencias >= 2;  // Requiere al menos 2 coincidencias
+        let coincidenciasExactas = 0;
+        let coincidenciasParciales = 0;
+
+        grupo.forEach(palabra => {
+            if (nombreRecibido.includes(palabra)) {
+                coincidenciasExactas++;  // Coincidencia completa
+            } else {
+                // Buscar coincidencias parciales (al menos 4 caracteres iguales)
+                for (let i = 0; i < nombreRecibido.length - 3; i++) {
+                    const fragmento = nombreRecibido.slice(i, i + palabra.length);
+                    if (palabra.startsWith(fragmento) && fragmento.length >= 4) {
+                        coincidenciasParciales++;
+                        break;
+                    }
+                }
+            }
+        });
+
+        return coincidenciasExactas >= 1 && coincidenciasParciales >= 1; // Aceptar con 1 exacta y 1 parcial
     });
 }
 
