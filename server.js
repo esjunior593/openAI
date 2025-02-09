@@ -186,7 +186,7 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
                     console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
             
                     // 🔹 Mensaje de confirmación con el número del remitente
-                    const mensaje = `🟩 *_Nuevo pago presentado._*\n\n` +
+                    const mensaje = `🟢 *_Nuevo pago presentado._*\n\n` +
                                     `📌 *Número:* ${datosExtraidos.documento}\n` +
                                     `🪀 *Enviado desde:* ${from}\n` +
                                     `🏷️ *Fecha:* ${fechaWhatsApp}\n` +
