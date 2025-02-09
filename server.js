@@ -182,17 +182,25 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
 // Definir nombres válidos
 // Definir nombres válidos
 // Definir nombres válidos
+// 🔹 Definir nombres válidos de beneficiarios
 const nombresValidos = [
     "AMELIA YADIRA RUIZ QUIMI",
     "NELISSA MAROLA QUINTERO QUIMI"
 ];
 
-// 🔹 Normalizar el nombre del beneficiario y remitente extraído
-const beneficiarioExtraido = (datosExtraidos.beneficiario || "").toUpperCase().trim();
-const remitenteExtraido = (datosExtraidos.remitente || "").toUpperCase().trim();
+// 🔹 Función para normalizar nombres eliminando espacios extras y pasando a mayúsculas
+const normalizarNombre = (nombre) => {
+    return (nombre || "").toUpperCase().trim().replace(/\s+/g, " ");
+};
 
-// 🔹 Verificar si el beneficiario o el remitente coinciden con las cuentas válidas
-const esBeneficiarioValido = nombresValidos.some(nombre => beneficiarioExtraido.includes(nombre) || remitenteExtraido.includes(nombre));
+// 🔹 Normalizar el nombre del beneficiario y remitente extraído
+const beneficiarioExtraido = normalizarNombre(datosExtraidos.beneficiario);
+const remitenteExtraido = normalizarNombre(datosExtraidos.remitente);
+
+// 🔹 Verificar si el beneficiario o el remitente coinciden con los nombres válidos
+const esBeneficiarioValido = nombresValidos.some(nombre =>
+    beneficiarioExtraido.includes(nombre) || remitenteExtraido.includes(nombre)
+);
 
 // 🔹 Si el beneficiario y remitente no coinciden con los nombres permitidos, rechazamos el pago
 if (!esBeneficiarioValido) {
@@ -203,6 +211,7 @@ if (!esBeneficiarioValido) {
                  `El pago no fue realizado a nuestra cuenta.`
     });
 }
+
 
 
 
