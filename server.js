@@ -136,7 +136,7 @@ const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("
 const fechaWhatsApp = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss");
 
 // 🔹 Verificar si la fecha se convirtió correctamente
-if (!fechaMySQL || fechaMySQL === "Invalid date") {
+if (!fechaFormateada || fechaFormateada === "Invalid date") {
     console.error("❌ Error al convertir la fecha:", fullDate);
     return res.status(400).json({ mensaje: "Error al procesar la fecha del comprobante." });
 }
@@ -161,7 +161,7 @@ if (!fechaMySQL || fechaMySQL === "Invalid date") {
 const fechaWhatsApp = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss");
 
 // 🔹 Verificar si la fecha se convirtió correctamente
-if (!fechaMySQL || fechaMySQL === "Invalid date") {
+if (!fechaFormateada || fechaFormateada === "Invalid date") {
     console.error("❌ Error al convertir la fecha:", fullDate);
     return res.status(400).json({ mensaje: "Error al procesar la fecha del comprobante." });
 }
