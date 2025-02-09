@@ -177,16 +177,24 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
 
    
 
-  // 🔹 Validar si el beneficiario es válido
-  const beneficiariosValidos = [
-    "AMELIA YADIRA RUIZ QUIMI",
-    "NELISSA MAROLA QUINTERO QUIMI"
+ // 🔹 Lista de beneficiarios válidos con palabras clave separadas
+const beneficiariosValidos = [
+    ["AMELIA", "YADIRA", "RUIZ", "QUIMI"],
+    ["NELISSA", "MAROLA", "QUINTERO", "QUIMI"]
 ];
 
 const beneficiarioRecibido = datosExtraidos.beneficiario ? datosExtraidos.beneficiario.toUpperCase() : "";
 
-// 🔹 Si el beneficiario está presente en el comprobante, validarlo
-if (beneficiarioRecibido && !beneficiariosValidos.some(nombre => beneficiarioRecibido.includes(nombre))) {
+// 🔹 Función para verificar si al menos dos palabras coinciden
+function esBeneficiarioValido(nombreRecibido) {
+    return beneficiariosValidos.some(grupo => {
+        const coincidencias = grupo.filter(palabra => nombreRecibido.includes(palabra)).length;
+        return coincidencias >= 2;  // Requiere al menos 2 coincidencias
+    });
+}
+
+// 🔹 Si el beneficiario está presente en el comprobante, validarlo con la nueva función
+if (beneficiarioRecibido && !esBeneficiarioValido(beneficiarioRecibido)) {
     console.log("🚨 Pago rechazado. Beneficiario no válido:", beneficiarioRecibido);
 
     return res.json({ 
