@@ -181,26 +181,34 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
 // 🔹 Lista de beneficiarios válidos
 // Definir nombres válidos
 // Definir nombres válidos
-// Definir nombres válidos
-// 🔹 Definir nombres válidos de beneficiarios
+// 🔹 Lista de palabras clave que hacen válido un beneficiario
 const nombresValidos = [
-    "AMELIA YADIRA RUIZ QUIMI",
-    "NELISSA MAROLA QUINTERO QUIMI"
+    "AMELIA", "YADIRA", "RUIZ", "QUIMI",
+    "NELISSA", "MAROLA", "QUINTERO"
 ];
 
-// 🔹 Función para normalizar nombres eliminando espacios extras y pasando a mayúsculas
+// 🔹 Función para normalizar nombres (mayúsculas, sin espacios extra)
 const normalizarNombre = (nombre) => {
     return (nombre || "").toUpperCase().trim().replace(/\s+/g, " ");
 };
 
-// 🔹 Normalizar el nombre del beneficiario y remitente extraído
+// 🔹 Función para verificar si el nombre extraído tiene alguna palabra clave válida
+const contieneNombreValido = (nombreExtraido) => {
+    if (!nombreExtraido) return false;
+    
+    const palabrasExtraido = normalizarNombre(nombreExtraido).split(" ");
+
+    return nombresValidos.some(palabraValida => 
+        palabrasExtraido.includes(palabraValida)
+    );
+};
+
+// 🔹 Normalizar nombres extraídos
 const beneficiarioExtraido = normalizarNombre(datosExtraidos.beneficiario);
 const remitenteExtraido = normalizarNombre(datosExtraidos.remitente);
 
-// 🔹 Verificar si el beneficiario o el remitente coinciden con los nombres válidos
-const esBeneficiarioValido = nombresValidos.some(nombre =>
-    beneficiarioExtraido.includes(nombre) || remitenteExtraido.includes(nombre)
-);
+// 🔹 Verificar si el beneficiario o el remitente contienen nombres válidos
+const esBeneficiarioValido = contieneNombreValido(beneficiarioExtraido) || contieneNombreValido(remitenteExtraido);
 
 // 🔹 Si el beneficiario y remitente no coinciden con los nombres permitidos, rechazamos el pago
 if (!esBeneficiarioValido) {
