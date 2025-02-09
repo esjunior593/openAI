@@ -82,10 +82,11 @@ Encuentra la fecha en la imagen y extrae el primer número que aparece justo des
 Debe estar en la sección de 'Cuenta de Origen', 'Desde', 'Ordenante', 'Remitente', 'Pagador' o 'Titular de Cuenta'. 
 Si el nombre coincide con 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MAROLA QUINTERO QUIMI' o sus variaciones ('Amelia Ruiz', 'Nelissa Quintero', 'Ruiz Quimi', 'Quintero Quimi'), entonces este NO es el remitente, sino el beneficiario, y debe asignarse al campo 'beneficiario'.",
 
-   "beneficiario": "Nombre de la persona que recibió el dinero. Debe estar en la sección de 'Cuenta Destino', 'Beneficiario', 'Receptor', 'Para', 'A Favor de', 'Destino' o similar. 
-  Si el nombre del beneficiario tiene errores tipográficos menores o variaciones en el orden de las palabras, corrígelo automáticamente. 
-  Si se detecta un nombre similar a 'Amelia Yadira Ruiz Quimi' o 'Nelissa Marola Quintero Quimi' con pequeñas diferencias, normalízalo para que coincida con la versión correcta. 
-  Si el nombre no tiene relación con estos beneficiarios, devuélvelo tal como está sin modificar.",
+  "beneficiario": "Nombre de la persona que recibió el dinero. 
+Debe estar en la sección de 'Cuenta Destino', 'Beneficiario', 'Receptor', 'Para', 'A Favor de', 'Destino' o similar. 
+Si el beneficiario no es detectado pero el remitente contiene 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MAROLA QUINTERO QUIMI' o una variación de estos nombres, entonces este nombre debe asignarse al campo 'beneficiario'.
+Si el nombre del beneficiario tiene errores tipográficos menores, corrígelo automáticamente. 
+Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MAROLA QUINTERO QUIMI' pero con variaciones como cambios en el orden de las palabras o errores de escritura, normalízalo para que coincida con la versión correcta.",
                                 "banco": "Nombre del banco que emitió el comprobante",
                                 "tipo": "Indicar 'Depósito' o 'Transferencia' según el comprobante"
                             }
