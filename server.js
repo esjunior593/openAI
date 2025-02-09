@@ -216,10 +216,8 @@ if (beneficiarioRecibido && !esBeneficiarioValido(beneficiarioRecibido)) {
     console.log("🚨 Pago rechazado. Beneficiario no válido:", beneficiarioRecibido);
 
     return res.json({ 
-        mensaje: `⚠️ *Pago rechazado.*\n\n` +
-                 `El pago no fue realizado a una cuenta registrada.\n\n` +
-                 `Si crees que esto es un error, por favor contacta a soporte.\n\n` +
-                 `📞 *Soporte:* 0980757208`
+        mensaje: `⛔ *Pago no válido.*\n\n` +
+             `El pago no fue realizado a nuestra cuenta.`
     });
 }
 
