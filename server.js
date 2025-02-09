@@ -25,29 +25,24 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
-
 const getBase64FromUrl = async (imageUrl) => {
     try {
         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
         const base64 = Buffer.from(response.data, 'binary').toString('base64');
-        const mimeType = response.headers['content-type']; // Obtener el tipo MIME de la imagen
-        return { url: `data:${mimeType};base64,${base64}` };  // 🔹 Retorna un objeto con la clave correcta
+        const mimeType = response.headers['content-type']; 
+        return { url: `data:${mimeType};base64,${base64}` }; 
     } catch (error) {
         console.error("❌ Error al convertir imagen a Base64:", error.message);
         return null;
     }
 };
 
-
-
 // Configuración de OpenAI
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 
 // Ruta para procesar comprobantes desde Builder Bot
 app.post('/procesar', async (req, res) => {
     try {
-        // 🔹 Imprimir todo el body para ver qué datos envía WhatsApp
         console.log("📥 Solicitud recibida desde WhatsApp:", req.body);
 
         const { urlTempFile, from, fullDate } = req.body;
@@ -55,13 +50,41 @@ app.post('/procesar', async (req, res) => {
             return res.status(400).json({ mensaje: 'No se recibió una URL de imagen' });
         }
 
-        // 🔹 Convertir la imagen a Base64
         const base64Image = await getBase64FromUrl(urlTempFile);
         if (!base64Image) {
             return res.status(400).json({ mensaje: 'Error al procesar la imagen. Intente con otra URL.' });
         }
 
-        // 🔹 Enviar a OpenAI con Base64 en lugar de URL
+        // 🔹 Detección de comprobantes falsos o editados
+        const detectionResponse = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+                { role: "system", content: "Eres un experto en detección de comprobantes de pago falsos. Evalúa si la imagen ha sido editada o manipulada." },
+                { 
+                    role: "user", 
+                    content: [
+                        { type: "text", text: "Analiza esta imagen y responde con 'true' si ha sido editada o modificada, de lo contrario responde 'false'." },
+                        { type: "image_url", image_url: { url: base64Image.url } }
+                    ]
+                }
+            ],
+            max_tokens: 10,
+        });
+
+        const esEditado = JSON.parse(detectionResponse.choices[0].message.content);
+
+        if (esEditado === true) {
+            console.log("🚨 Se detectó un comprobante editado o falso.");
+
+            return res.json({
+                mensaje: "🚨 *Alerta de comprobante falso*\n\n" +
+                         "⚠️ Se ha detectado que esta imagen podría estar editada o manipulada.\n" +
+                         "Si crees que esto es un error, contacta con soporte.\n\n" +
+                         "👉 *Soporte:* 0980757208 👈"
+            });
+        }
+
+        // 🔹 Extracción de datos del comprobante
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
             response_format: { type: "json_object" },
@@ -72,12 +95,9 @@ app.post('/procesar', async (req, res) => {
                     content: [
                         { type: "text", text: `Extrae la siguiente información del comprobante de pago en la imagen y devuélvelo en formato JSON:
                             {
-                                "documento": "Número exacto del comprobante o transacción sin palabras adicionales. 
-                                     Si el comprobante pertenece a 'Tu Banco Banco Aquí', el número de documento 
-                                     está inmediatamente después de la fecha en formato DD/MM/YYYY HH:MM:SS. 
-                                     Encuentra la fecha en la imagen y extrae el primer número que aparece justo después.",
+                                "documento": "Número exacto del comprobante o transacción sin palabras adicionales.",
                                 "valor": "Monto del pago en formato numérico con dos decimales",
-                               "remitente": "Nombre de la persona que realizó la transferencia. Debe estar en la sección de 'Cuenta de Origen', 'Desde', 'Ordenante', 'Remitente', 'Pagador' o 'Titular de Cuenta'",
+                                "remitente": "Nombre de la persona que realizó la transferencia.",
                                 "banco": "Nombre del banco que emitió el comprobante",
                                 "tipo": "Indicar 'Depósito' o 'Transferencia' según el comprobante"
                             }
@@ -89,88 +109,48 @@ app.post('/procesar', async (req, res) => {
             ],
             max_tokens: 300,
         });
-        
-        // 🔹 Mostrar la respuesta de OpenAI en los logs de Railway
-        console.log("📩 Respuesta de OpenAI:", JSON.stringify(response, null, 2));
-        
 
+        console.log("📩 Respuesta de OpenAI:", JSON.stringify(response, null, 2));
         const datosExtraidos = JSON.parse(response.choices[0].message.content);
 
-        // 🔹 Validar si OpenAI extrajo correctamente la información
-if (!datosExtraidos.documento || !datosExtraidos.valor || !datosExtraidos.banco || !datosExtraidos.tipo) {
-    console.log("🚨 No se detectó un comprobante de pago en la imagen. Enviando mensaje de soporte.");
-    
-    return res.json({ 
-        mensaje: "Si tiene algún problema con su servicio, escriba al número de Soporte por favor.\n\n" +
-                 "👉 *Soporte:* 0980757208 👈"
-    });
-}
+        if (!datosExtraidos.documento || !datosExtraidos.valor || !datosExtraidos.banco || !datosExtraidos.tipo) {
+            console.log("🚨 No se detectó un comprobante de pago en la imagen. Enviando mensaje de soporte.");
 
-// 🔹 Verificar si el comprobante está incompleto
-if (!datosExtraidos.documento || !datosExtraidos.valor) {
-    console.log("⏳ Comprobante con información incompleta. Enviando mensaje de espera.");
-    
-    return res.json({ 
-        mensaje: "⏳ *Estamos verificando su pago, un momento por favor...*"
-    });
-}
+            return res.json({ 
+                mensaje: "Si tiene algún problema con su servicio, escriba al número de Soporte por favor.\n\n" +
+                         "👉 *Soporte:* 0980757208 👈"
+            });
+        }
 
-
-        // 🔹 Verificar si el número de documento ya existe en la base de datos
         db.query('SELECT * FROM comprobantes WHERE documento = ?', [datosExtraidos.documento], (err, results) => {
             if (err) return res.status(500).json({ error: err.message });
 
             if (results.length > 0) {
                 console.log("🚨 Comprobante ya registrado:", datosExtraidos.documento);
-                
-                // 🔹 Formatear el número para mostrar solo los últimos 5 dígitos
                 const numeroOculto = `09XXX${results[0].whatsapp.slice(-5)}`;
 
-                const moment = require('moment'); // Requiere instalar moment.js
-
-                // 🔹 Convertir fullDate a formato 'YYYY-MM-DD HH:mm:ss' para MySQL
-                const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss");
-                
-                // 🔹 Mensaje indicando que el comprobante ya fue usado
-                const mensaje = `🚫 Este comprobante ya ha sido presentado por el número *${numeroOculto}*.\n\n` +
-                                `📌 *Número:* ${results[0].documento}\n` +
-                                `📞 *Enviado desde:* ${numeroOculto}\n` +
-                                `📅 *Fecha de envío:* ${fechaFormateada}\n` +
-                                `💰 *Monto:* $${results[0].valor}`;
-            
-                return res.json({ mensaje });
+                return res.json({ 
+                    mensaje: `🚫 Este comprobante ya ha sido presentado por el número *${numeroOculto}*.\n\n` +
+                             `📌 *Número:* ${results[0].documento}\n` +
+                             `📞 *Enviado desde:* ${numeroOculto}\n` +
+                             `📅 *Fecha de envío:* ${moment(fullDate).format("DD/MM/YYYY HH:mm:ss")}\n` +
+                             `💰 *Monto:* $${results[0].valor}`
+                });
             }
 
-            const moment = require('moment'); // Requiere instalar moment.js
-
-            // 🔹 Convertir fullDate a formato 'YYYY-MM-DD HH:mm:ss' para MySQL
-            const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss");
-            
-            // 🔹 Formatear el número de WhatsApp para mostrar solo los últimos 5 dígitos
-            const numeroOculto = `09XXX${from.slice(-5)}`; 
-
-            console.log("📥 Intentando guardar en MySQL:", datosExtraidos);
-
-            // 🔹 Insertar en la base de datos si no existe
-            // 🔹 Insertar en la base de datos con el número de WhatsApp
             db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.remitente || "Desconocido", fechaFormateada, datosExtraidos.tipo, datosExtraidos.banco, from],
+                [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.remitente || "Desconocido", fullDate, datosExtraidos.tipo, datosExtraidos.banco, from],
                 (err, result) => {
-                    if (err) {
-                        console.error("❌ Error en la inserción en MySQL:", err);
-                        return res.status(500).json({ error: err.message });
-                    }
-                    console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
-            
-                    // 🔹 Mensaje de confirmación con el número del remitente
-                    const mensaje = `✅ Comprobante registrado exitosamente desde el número *${from}*.\n\n` +
-                                    `📌 *Número:* ${datosExtraidos.documento}\n` +
-                                    `📞 *Enviado desde:* ${from}\n` +
-                                    `👤 *Remitente:* ${datosExtraidos.remitente}\n` +  // Ahora muestra el remitente correctamente
-                                    `📅 *Fecha de envío:* ${fechaFormateada}\n` +
-                                    `💰 *Monto:* $${datosExtraidos.valor}`;
-            
-                    res.json({ mensaje });
+                    if (err) return res.status(500).json({ error: err.message });
+
+                    res.json({ 
+                        mensaje: `✅ Comprobante registrado exitosamente desde el número *${from}*.\n\n` +
+                                 `📌 *Número:* ${datosExtraidos.documento}\n` +
+                                 `📞 *Enviado desde:* ${from}\n` +
+                                 `👤 *Remitente:* ${datosExtraidos.remitente}\n` +
+                                 `📅 *Fecha de envío:* ${moment(fullDate).format("DD/MM/YYYY HH:mm:ss")}\n` +
+                                 `💰 *Monto:* $${datosExtraidos.valor}`
+                    });
                 }
             );
         });
@@ -180,8 +160,6 @@ if (!datosExtraidos.documento || !datosExtraidos.valor) {
         res.status(500).json({ error: "Error interno del servidor." });
     }
 });
-
-
 
 app.listen(PORT, () => {
     console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
