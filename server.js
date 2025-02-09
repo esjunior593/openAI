@@ -174,6 +174,28 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
 
             console.log("📥 Intentando guardar en MySQL:", datosExtraidos);
 
+            // Lista de nombres válidos para la cuenta destino
+const nombresValidos = [
+    "AMELIA YADIRA RUIZ QUIMI",
+    "NELISSA MAROLA QUINTERO QUIMI"
+];
+
+// Validar si el destinatario es correcto
+if (!nombresValidos.includes(datosExtraidos.remitente.toUpperCase().trim())) {
+    console.log("🚨 Pago rechazado: La cuenta destino no es válida.");
+    
+    return res.json({ 
+        mensaje: "❌ *El pago no es válido.*\n\n" +
+                 "El titular de la cuenta destino no coincide con nuestros registros.\n\n" +
+                 "👉 *Verifique que la cuenta destino esté a nombre de:*\n" +
+                 "📌 AMELIA YADIRA RUIZ QUIMI\n" +
+                 "📌 NELISSA MAROLA QUINTERO QUIMI\n\n" +
+                 "Si hay un error, por favor contacte a soporte.\n\n" +
+                 "👉 *Soporte:* 0980757208 👈"
+    });
+}
+
+
             // 🔹 Insertar en la base de datos si no existe
             // 🔹 Insertar en la base de datos con el número de WhatsApp
             db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp) VALUES (?, ?, ?, ?, ?, ?, ?)',
