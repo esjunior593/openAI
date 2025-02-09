@@ -176,36 +176,6 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
             console.log("📥 Intentando guardar en MySQL:", datosExtraidos);
 
    
-
- // 🔹 Lista de beneficiarios válidos con palabras clave separadas
-// 🔹 Lista de beneficiarios válidos
-// 🔹 Validar si el beneficiario está presente y si es válido
-if (!datosExtraidos.beneficiario || datosExtraidos.beneficiario.trim() === "") {
-    console.log("⏳ Beneficiario no detectado. Enviando mensaje de verificación...");
-    return res.json({
-        mensaje: "⏳ *Estamos verificando su pago...*\n\n" +
-                 "Agradecemos su espera 🕕"
-    });
-}
-
-// 🔹 Validar si el beneficiario contiene los nombres permitidos
-const nombresPermitidos = ["AMELIA", "YADIRA", "RUIZ", "QUIMI", "NELISSA", "MAROLA", "QUINTERO"];
-const beneficiarioValido = nombresPermitidos.some(nombre => 
-    datosExtraidos.beneficiario.toUpperCase().includes(nombre)
-);
-
-if (!beneficiarioValido) {
-    console.log(`🚨 Pago rechazado. Beneficiario no válido: ${datosExtraidos.beneficiario}`);
-    return res.json({
-        mensaje: "⛔ *Pago no válido.*\n\n" +
-                 "El pago no fue realizado a nuestra cuenta."
-    });
-}
-
-
-
-
-
             // 🔹 Insertar en la base de datos si no existe
             // 🔹 Insertar en la base de datos con el número de WhatsApp
             db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp) VALUES (?, ?, ?, ?, ?, ?, ?)',
