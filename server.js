@@ -26,61 +26,83 @@ const db = mysql.createPool({
 });
 
 // Función para convertir imagen a Base64
-// 🔹 Convertir la imagen a Base64
-const base64Image = await getBase64FromUrl(urlTempFile);
-if (!base64Image) {
-    return res.status(400).json({ mensaje: 'Error al procesar la imagen. Intente con otra URL.' });
-}
-
-// 🔹 Detección de comprobantes falsos o editados
-const detectionResponse = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-        { role: "system", content: "Eres un experto en detección de comprobantes de pago falsos. Evalúa si la imagen ha sido editada o manipulada." },
-        { 
-            role: "user", 
-            content: [
-                { type: "text", text: "Analiza esta imagen y responde SOLO con 'true' si ha sido editada o modificada, o 'false' si es auténtico. No agregues ninguna otra palabra en la respuesta." },
-                { type: "image_url", image_url: { url: base64Image.url } }
-            ]
-        }
-    ],
-    max_tokens: 10,
-});
-
-// 🔹 Imprimir la respuesta de OpenAI en logs para depuración
-console.log("📩 Respuesta de detección de falsificaciones:", JSON.stringify(detectionResponse, null, 2));
-
-let esEditado;
-try {
-    // Verificar si la respuesta tiene contenido válido
-    const responseText = detectionResponse.choices[0].message.content.trim().toLowerCase();
-    
-    if (responseText === "true") {
-        esEditado = true;
-    } else if (responseText === "false") {
-        esEditado = false;
-    } else {
-        console.error("❌ Respuesta inesperada en detección de falsificaciones:", responseText);
-        return res.json({ mensaje: "⚠️ No se pudo verificar si el comprobante es falso. Intente nuevamente o contacte soporte." });
+const getBase64FromUrl = async (imageUrl) => {
+    try {
+        const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+        const base64 = Buffer.from(response.data, 'binary').toString('base64');
+        const mimeType = response.headers['content-type'];
+        return { url: `data:${mimeType};base64,${base64}` };
+    } catch (error) {
+        console.error("❌ Error al convertir imagen a Base64:", error.message);
+        return null;
     }
-} catch (error) {
-    console.error("❌ Error al procesar la respuesta de detección de falsificaciones:", error);
-    return res.json({ mensaje: "⚠️ No se pudo verificar si el comprobante es falso. Intente nuevamente o contacte soporte." });
-}
+};
 
-// 🔹 Si se detecta un comprobante falso, enviar alerta
-if (esEditado) {
-    console.log("🚨 Se detectó un comprobante editado o falso.");
-    return res.json({
-        mensaje: "🚨 *Alerta de comprobante falso*\n\n" +
-                 "⚠️ Se ha detectado que esta imagen podría estar editada o manipulada.\n" +
-                 "Si crees que esto es un error, contacta con soporte.\n\n" +
-                 "👉 *Soporte:* 0980757208 👈"
-    });
-}
+// Configuración de OpenAI
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-        // 🔹 Extracción de datos del comprobante
+// Ruta para procesar comprobantes desde Builder Bot
+app.post('/procesar', async (req, res) => {
+    try {
+        console.log("📥 Solicitud recibida desde WhatsApp:", req.body);
+
+        const { urlTempFile, from, fullDate } = req.body;
+        if (!urlTempFile) {
+            return res.status(400).json({ mensaje: 'No se recibió una URL de imagen' });
+        }
+
+        // Convertir la imagen a Base64
+        const base64Image = await getBase64FromUrl(urlTempFile);
+        if (!base64Image) {
+            return res.status(400).json({ mensaje: 'Error al procesar la imagen. Intente con otra URL.' });
+        }
+
+        // 🔹 Detección de comprobantes falsos o editados
+        const detectionResponse = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+                { role: "system", content: "Eres un experto en detección de comprobantes de pago falsos. Evalúa si la imagen ha sido editada o manipulada." },
+                { 
+                    role: "user", 
+                    content: [
+                        { type: "text", text: "Analiza esta imagen y responde SOLO con 'true' si ha sido editada o modificada, o 'false' si es auténtico. No agregues ninguna otra palabra en la respuesta." },
+                        { type: "image_url", image_url: { url: base64Image.url } }
+                    ]
+                }
+            ],
+            max_tokens: 10,
+        });
+
+        console.log("📩 Respuesta de detección de falsificaciones:", JSON.stringify(detectionResponse, null, 2));
+
+        let esEditado;
+        try {
+            const responseText = detectionResponse.choices[0].message.content.trim().toLowerCase();
+            
+            if (responseText === "true") {
+                esEditado = true;
+            } else if (responseText === "false") {
+                esEditado = false;
+            } else {
+                console.error("❌ Respuesta inesperada en detección de falsificaciones:", responseText);
+                return res.json({ mensaje: "⚠️ No se pudo verificar si el comprobante es falso. Intente nuevamente o contacte soporte." });
+            }
+        } catch (error) {
+            console.error("❌ Error al procesar la respuesta de detección de falsificaciones:", error);
+            return res.json({ mensaje: "⚠️ No se pudo verificar si el comprobante es falso. Intente nuevamente o contacte soporte." });
+        }
+
+        if (esEditado) {
+            console.log("🚨 Se detectó un comprobante editado o falso.");
+            return res.json({
+                mensaje: "🚨 *Alerta de comprobante falso*\n\n" +
+                         "⚠️ Se ha detectado que esta imagen podría estar editada o manipulada.\n" +
+                         "Si crees que esto es un error, contacta con soporte.\n\n" +
+                         "👉 *Soporte:* 0980757208 👈"
+            });
+        }
+
+        // Extraer datos del comprobante si no es falso
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
             response_format: { type: "json_object" },
@@ -106,47 +128,37 @@ if (esEditado) {
             max_tokens: 300,
         });
 
-        // 🔹 Validar si la respuesta de OpenAI es JSON
-        let datosExtraidos;
-        try {
-            datosExtraidos = JSON.parse(response.choices[0].message.content);
-        } catch (error) {
-            console.error("❌ OpenAI devolvió un formato inesperado:", response.choices[0].message.content);
-            return res.json({ mensaje: "⚠️ Error al extraer información del comprobante. Intente nuevamente o contacte soporte." });
-        }
+        console.log("📩 Respuesta de OpenAI:", JSON.stringify(response, null, 2));
+        
+        const datosExtraidos = JSON.parse(response.choices[0].message.content);
 
-        // 🔹 Verificar si los datos son válidos
+        // Validar si OpenAI extrajo correctamente la información
         if (!datosExtraidos.documento || !datosExtraidos.valor || !datosExtraidos.banco || !datosExtraidos.tipo) {
             console.log("🚨 No se detectó un comprobante de pago en la imagen. Enviando mensaje de soporte.");
-            return res.json({ 
-                mensaje: "Si tiene algún problema con su servicio, escriba al número de Soporte por favor.\n\n" +
-                         "👉 *Soporte:* 0980757208 👈"
-            });
+            return res.json({ mensaje: "Si tiene algún problema con su servicio, escriba al número de Soporte por favor.\n\n👉 *Soporte:* 0980757208 👈" });
         }
 
-        // 🔹 Verificar si el comprobante ya está registrado
+        // Verificar si el número de documento ya existe en la base de datos
         db.query('SELECT * FROM comprobantes WHERE documento = ?', [datosExtraidos.documento], (err, results) => {
             if (err) return res.status(500).json({ error: err.message });
 
             if (results.length > 0) {
                 console.log("🚨 Comprobante ya registrado:", datosExtraidos.documento);
-                const numeroOculto = `09XXX${results[0].whatsapp.slice(-5)}`;
-
-                return res.json({ 
-                    mensaje: `🚫 Este comprobante ya ha sido presentado por el número *${numeroOculto}*.\n\n` +
-                             `📌 *Número:* ${results[0].documento}\n` +
-                             `📞 *Enviado desde:* ${numeroOculto}\n` +
-                             `📅 *Fecha de envío:* ${moment(fullDate).format("DD/MM/YYYY HH:mm:ss")}\n` +
-                             `💰 *Monto:* $${results[0].valor}`
-                });
+                return res.json({ mensaje: `🚫 Este comprobante ya ha sido registrado: ${datosExtraidos.documento}.` });
             }
 
+            console.log("📥 Intentando guardar en MySQL:", datosExtraidos);
+
+            // Insertar en la base de datos
             db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp) VALUES (?, ?, ?, ?, ?, ?, ?)',
                 [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.remitente || "Desconocido", fullDate, datosExtraidos.tipo, datosExtraidos.banco, from],
                 (err, result) => {
-                    if (err) return res.status(500).json({ error: err.message });
-
-                    res.json({ mensaje: `✅ Comprobante registrado exitosamente desde el número *${from}*.\n\n📌 *Número:* ${datosExtraidos.documento}\n📞 *Enviado desde:* ${from}\n👤 *Remitente:* ${datosExtraidos.remitente}\n📅 *Fecha de envío:* ${moment(fullDate).format("DD/MM/YYYY HH:mm:ss")}\n💰 *Monto:* $${datosExtraidos.valor}` });
+                    if (err) {
+                        console.error("❌ Error en la inserción en MySQL:", err);
+                        return res.status(500).json({ error: err.message });
+                    }
+                    console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
+                    res.json({ mensaje: `✅ Pago registrado exitosamente. Documento: ${datosExtraidos.documento}.` });
                 }
             );
         });
