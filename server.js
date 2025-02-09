@@ -184,12 +184,12 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
                     console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
             
                     // 🔹 Mensaje de confirmación con el número del remitente
-                    const mensaje = `✅ Comprobante registrado exitosamente desde el número *${from}*.\n\n` +
+                    const mensaje = `Nuevo comprobante presentado desde el número *${from}*.\n\n` +
                                     `📌 *Número:* ${datosExtraidos.documento}\n` +
                                     `📞 *Enviado desde:* ${from}\n` +
-                                    `👤 *Remitente:* ${datosExtraidos.remitente}\n` +  // Ahora muestra el remitente correctamente
                                     `📅 *Fecha de envío:* ${fechaWhatsApp}\n` +
-                                    `💰 *Monto:* $${datosExtraidos.valor}`;
+                                    `💰 *Monto:* $${datosExtraidos.valor}`+
+                                    `Estamos *verificando su pago* 💵...\n\nAgradecemos su espera 🕕`;
             
                     res.json({ mensaje });
                 }
