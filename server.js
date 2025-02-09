@@ -79,6 +79,7 @@ Si el comprobante pertenece a 'Tu Banco Banco Aquí', el número de documento es
 Encuentra la fecha en la imagen y extrae el primer número que aparece justo después.",
                                 "valor": "Monto del pago en formato numérico con dos decimales",
                                "remitente": "Nombre de la persona que realizó la transferencia. Debe estar en la sección de 'Cuenta de Origen', 'Desde', 'Ordenante', 'Remitente', 'Pagador' o 'Titular de Cuenta'",
+                               "beneficiario": "Nombre de la persona que recibió el dinero. Debe estar en la sección de 'Cuenta Destino', 'Beneficiario', 'Receptor', 'Para', 'A Favor de', 'Destino' o similar",
                                 "banco": "Nombre del banco que emitió el comprobante",
                                 "tipo": "Indicar 'Depósito' o 'Transferencia' según el comprobante"
                             }
@@ -113,6 +114,29 @@ if (!datosExtraidos.documento || !datosExtraidos.valor) {
     
     return res.json({ 
         mensaje: "⏳ *Estamos verificando su pago, un momento por favor...*"
+    });
+}
+
+const nombresValidos = [
+    /AMELIA.*RUIZ.*QUIMI/i,  // Detecta cualquier variación con "Amelia", "Ruiz" y "Quimi"
+    /NELISSA.*QUINTERO.*QUIMI/i  // Detecta cualquier variación con "Nelissa", "Quintero" y "Quimi"
+];
+
+// 🔹 Validar si el beneficiario es válido
+const beneficiario = datosExtraidos.beneficiario?.toUpperCase().trim() || "";
+const esBeneficiarioValido = nombresValidos.some(regex => regex.test(beneficiario));
+
+if (!esBeneficiarioValido) {
+    console.log("🚨 Pago rechazado: La cuenta destino no es válida.");
+    
+    return res.json({ 
+        mensaje: "❌ *El pago no es válido.*\n\n" +
+                 "El titular de la cuenta destino no coincide con nuestros registros.\n\n" +
+                 "👉 *Verifique que la cuenta destino esté a nombre de:*\n" +
+                 "📌 *AMELIA YADIRA RUIZ QUIMI*\n" +
+                 "📌 *NELISSA MAROLA QUINTERO QUIMI*\n\n" +
+                 "Si hay un error, por favor contacte a soporte.\n\n" +
+                 "👉 *Soporte:* 0980757208 👈"
     });
 }
 
@@ -174,27 +198,7 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
 
             console.log("📥 Intentando guardar en MySQL:", datosExtraidos);
 
-            // Lista de nombres válidos para la cuenta destino
-const nombresValidos = [
-    "AMELIA YADIRA RUIZ QUIMI",
-    "NELISSA MAROLA QUINTERO QUIMI"
-];
-
-// Validar si el destinatario es correcto
-if (!nombresValidos.includes(datosExtraidos.remitente.toUpperCase().trim())) {
-    console.log("🚨 Pago rechazado: La cuenta destino no es válida.");
-    
-    return res.json({ 
-        mensaje: "❌ *El pago no es válido.*\n\n" +
-                 "El titular de la cuenta destino no coincide con nuestros registros.\n\n" +
-                 "👉 *Verifique que la cuenta destino esté a nombre de:*\n" +
-                 "📌 AMELIA YADIRA RUIZ QUIMI\n" +
-                 "📌 NELISSA MAROLA QUINTERO QUIMI\n\n" +
-                 "Si hay un error, por favor contacte a soporte.\n\n" +
-                 "👉 *Soporte:* 0980757208 👈"
-    });
-}
-
+   
 
             // 🔹 Insertar en la base de datos si no existe
             // 🔹 Insertar en la base de datos con el número de WhatsApp
