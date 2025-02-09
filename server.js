@@ -78,8 +78,13 @@ Si hay más de un número similar, prioriza el que esté junto a palabras clave 
 Si el comprobante pertenece a 'Tu Banco Banco Aquí', el número de documento está inmediatamente después de la fecha en formato DD/MM/YYYY HH:MM:SS. 
 Encuentra la fecha en la imagen y extrae el primer número que aparece justo después.",
                                 "valor": "Monto del pago en formato numérico con dos decimales",
-                               "remitente": "Nombre de la persona que realizó la transferencia. Debe estar en la sección de 'Cuenta de Origen', 'Desde', 'Ordenante', 'Remitente', 'Pagador' o 'Titular de Cuenta'",
-                               "beneficiario": "Nombre de la persona que recibió el dinero. Debe estar en la sección de 'Cuenta Destino', 'Beneficiario', 'Receptor', 'Para', 'A Favor de', 'Destino' o similar",
+                                "remitente": "Nombre de la persona que realizó la transferencia. 
+Debe estar en la sección de 'Cuenta de Origen', 'Desde', 'Ordenante', 'Remitente', 'Pagador' o 'Titular de Cuenta'. 
+Si el nombre coincide con 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MAROLA QUINTERO QUIMI' o sus variaciones ('Amelia Ruiz', 'Nelissa Quintero', 'Ruiz Quimi', 'Quintero Quimi'), entonces este NO es el remitente, sino el beneficiario, y debe asignarse al campo 'beneficiario'.",
+
+  "beneficiario": "Nombre de la persona que recibió el dinero. 
+Debe estar en la sección de 'Cuenta Destino', 'Beneficiario', 'Receptor', 'Para', 'A Favor de', 'Destino' o similar. 
+Si el beneficiario no es detectado pero el remitente contiene 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MAROLA QUINTERO QUIMI' o una variación de estos nombres, entonces este nombre debe asignarse al campo 'beneficiario'.",
                                 "banco": "Nombre del banco que emitió el comprobante",
                                 "tipo": "Indicar 'Depósito' o 'Transferencia' según el comprobante"
                             }
