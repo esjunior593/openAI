@@ -129,9 +129,18 @@ if (!datosExtraidos.documento || !datosExtraidos.valor) {
 
                 const moment = require('moment'); // Requiere instalar moment.js
 
-                // 🔹 Convertir fullDate a formato 'YYYY-MM-DD HH:mm:ss' para MySQL
-                const fechaFormateada = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm:ss"]).format("YYYY-MM-DD HH:mm:ss");
-const fechaWhatsApp = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm:ss"]).format("DD-MM-YYYY HH:mm:ss");
+               // 🔹 Convertir fullDate correctamente desde WhatsApp a MySQL
+const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss");
+
+// 🔹 Convertir fullDate al formato para WhatsApp
+const fechaWhatsApp = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss");
+
+// 🔹 Verificar si la fecha se convirtió correctamente
+if (!fechaMySQL || fechaMySQL === "Invalid date") {
+    console.error("❌ Error al convertir la fecha:", fullDate);
+    return res.status(400).json({ mensaje: "Error al procesar la fecha del comprobante." });
+}
+
 
                 // 🔹 Mensaje indicando que el comprobante ya fue usado
                 const mensaje = `🚫 Este comprobante ya ha sido presentado por el número *${numeroOculto}*.\n\n` +
@@ -146,8 +155,17 @@ const fechaWhatsApp = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm
             const moment = require('moment'); // Requiere instalar moment.js
 
             // 🔹 Convertir fullDate a formato 'YYYY-MM-DD HH:mm:ss' para MySQL
-            const fechaFormateada = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm:ss"]).format("YYYY-MM-DD HH:mm:ss");
-const fechaWhatsApp = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm:ss"]).format("DD-MM-YYYY HH:mm:ss");
+            const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss");
+
+// 🔹 Convertir fullDate al formato para WhatsApp
+const fechaWhatsApp = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss");
+
+// 🔹 Verificar si la fecha se convirtió correctamente
+if (!fechaMySQL || fechaMySQL === "Invalid date") {
+    console.error("❌ Error al convertir la fecha:", fullDate);
+    return res.status(400).json({ mensaje: "Error al procesar la fecha del comprobante." });
+}
+
 
             // 🔹 Formatear el número de WhatsApp para mostrar solo los últimos 5 dígitos
             const numeroOculto = `09XXX${from.slice(-5)}`; 
