@@ -130,7 +130,7 @@ if (!datosExtraidos.documento || !datosExtraidos.valor) {
                 const moment = require('moment'); // Requiere instalar moment.js
 
                 // 🔹 Convertir fullDate a formato 'YYYY-MM-DD HH:mm:ss' para MySQL
-                const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss");
+                const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss");
                 
                 // 🔹 Mensaje indicando que el comprobante ya fue usado
                 const mensaje = `🚫 Este comprobante ya ha sido presentado por el número *${numeroOculto}*.\n\n` +
@@ -145,7 +145,7 @@ if (!datosExtraidos.documento || !datosExtraidos.valor) {
             const moment = require('moment'); // Requiere instalar moment.js
 
             // 🔹 Convertir fullDate a formato 'YYYY-MM-DD HH:mm:ss' para MySQL
-            const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss");
+            const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss");
             
             // 🔹 Formatear el número de WhatsApp para mostrar solo los últimos 5 dígitos
             const numeroOculto = `09XXX${from.slice(-5)}`; 
