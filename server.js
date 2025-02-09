@@ -179,45 +179,23 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
 
  // 🔹 Lista de beneficiarios válidos con palabras clave separadas
 // 🔹 Lista de beneficiarios válidos
-const beneficiariosValidos = [
-    ["AMELIA", "YADIRA", "RUIZ", "QUIMI"],
-    ["NELISSA", "MAROLA", "QUINTERO", "QUIMI"]
+// Definir nombres válidos
+const nombresValidos = [
+    "AMELIA YADIRA RUIZ QUIMI",
+    "NELISSA MAROLA QUINTERO QUIMI"
 ];
 
-const beneficiarioRecibido = datosExtraidos.beneficiario ? datosExtraidos.beneficiario.toUpperCase() : "";
+// 🔹 Normalizar el nombre del beneficiario extraído
+const beneficiarioExtraido = (datosExtraidos.beneficiario || "").toUpperCase().trim();
 
-// 🔹 Función para verificar beneficiarios con tolerancia a cortes de texto
-function esBeneficiarioValido(nombreRecibido) {
-    return beneficiariosValidos.some(grupo => {
-        let coincidenciasExactas = 0;
-        let coincidenciasParciales = 0;
+// 🔹 Verificar si el beneficiario es válido usando coincidencias parciales
+const esBeneficiarioValido = nombresValidos.some(nombre => beneficiarioExtraido.includes(nombre.split(" ")[0]) && beneficiarioExtraido.includes(nombre.split(" ")[1]));
 
-        grupo.forEach(palabra => {
-            if (nombreRecibido.includes(palabra)) {
-                coincidenciasExactas++;  // Coincidencia completa
-            } else {
-                // Buscar coincidencias parciales (al menos 4 caracteres iguales)
-                for (let i = 0; i < nombreRecibido.length - 3; i++) {
-                    const fragmento = nombreRecibido.slice(i, i + palabra.length);
-                    if (palabra.startsWith(fragmento) && fragmento.length >= 4) {
-                        coincidenciasParciales++;
-                        break;
-                    }
-                }
-            }
-        });
-
-        return coincidenciasExactas >= 1 && coincidenciasParciales >= 1; // Aceptar con 1 exacta y 1 parcial
-    });
-}
-
-// 🔹 Si el beneficiario está presente en el comprobante, validarlo con la nueva función
-if (beneficiarioRecibido && !esBeneficiarioValido(beneficiarioRecibido)) {
-    console.log("🚨 Pago rechazado. Beneficiario no válido:", beneficiarioRecibido);
-
+if (!esBeneficiarioValido) {
+    console.log(`🚨 Pago rechazado. Beneficiario no válido: ${beneficiarioExtraido}`);
     return res.json({ 
         mensaje: `⛔ *Pago no válido.*\n\n` +
-             `El pago no fue realizado a nuestra cuenta.`
+                 `El pago no fue realizado a nuestra cuenta.`
     });
 }
 
