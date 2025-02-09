@@ -130,7 +130,7 @@ if (!datosExtraidos.documento || !datosExtraidos.valor) {
                 const moment = require('moment'); // Requiere instalar moment.js
 
                 // 🔹 Convertir fullDate a formato 'YYYY-MM-DD HH:mm:ss' para MySQL
-                const fechaMySQL = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm:ss"]).format("YYYY-MM-DD HH:mm:ss");
+                const fechaFormateada = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm:ss"]).format("YYYY-MM-DD HH:mm:ss");
 const fechaWhatsApp = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm:ss"]).format("DD-MM-YYYY HH:mm:ss");
 
                 // 🔹 Mensaje indicando que el comprobante ya fue usado
@@ -146,7 +146,7 @@ const fechaWhatsApp = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm
             const moment = require('moment'); // Requiere instalar moment.js
 
             // 🔹 Convertir fullDate a formato 'YYYY-MM-DD HH:mm:ss' para MySQL
-            const fechaMySQL = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm:ss"]).format("YYYY-MM-DD HH:mm:ss");
+            const fechaFormateada = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm:ss"]).format("YYYY-MM-DD HH:mm:ss");
 const fechaWhatsApp = moment(fullDate, ["DD-MM-YYYY HH:mm:ss", "YYYY-MM-DD HH:mm:ss"]).format("DD-MM-YYYY HH:mm:ss");
 
             // 🔹 Formatear el número de WhatsApp para mostrar solo los últimos 5 dígitos
