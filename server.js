@@ -179,46 +179,29 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
 
  // 🔹 Lista de beneficiarios válidos con palabras clave separadas
 // 🔹 Lista de beneficiarios válidos
-// Definir nombres válidos
-// Definir nombres válidos
-// 🔹 Lista de palabras clave que hacen válido un beneficiario
-const nombresValidos = [
-    "AMELIA", "YADIRA", "RUIZ", "QUIMI",
-    "NELISSA", "MAROLA", "QUINTERO"
-];
-
-// 🔹 Función para normalizar nombres (mayúsculas, sin espacios extra)
-const normalizarNombre = (nombre) => {
-    return (nombre || "").toUpperCase().trim().replace(/\s+/g, " ");
-};
-
-// 🔹 Función para verificar si el nombre extraído tiene alguna palabra clave válida
-const contieneNombreValido = (nombreExtraido) => {
-    if (!nombreExtraido) return false;
-    
-    const palabrasExtraido = normalizarNombre(nombreExtraido).split(" ");
-
-    return nombresValidos.some(palabraValida => 
-        palabrasExtraido.includes(palabraValida)
-    );
-};
-
-// 🔹 Normalizar nombres extraídos
-const beneficiarioExtraido = normalizarNombre(datosExtraidos.beneficiario);
-const remitenteExtraido = normalizarNombre(datosExtraidos.remitente);
-
-// 🔹 Verificar si el beneficiario o el remitente contienen nombres válidos
-const esBeneficiarioValido = contieneNombreValido(beneficiarioExtraido) || contieneNombreValido(remitenteExtraido);
-
-// 🔹 Si el beneficiario y remitente no coinciden con los nombres permitidos, rechazamos el pago
-if (!esBeneficiarioValido) {
-    console.log(`🚨 Pago rechazado. Beneficiario no válido: ${beneficiarioExtraido}, Remitente: ${remitenteExtraido}`);
-    
-    return res.json({ 
-        mensaje: `⛔ *Pago no válido.*\n\n` +
-                 `El pago no fue realizado a nuestra cuenta.`
+// 🔹 Validar si el beneficiario está presente y si es válido
+if (!datosExtraidos.beneficiario || datosExtraidos.beneficiario.trim() === "") {
+    console.log("⏳ Beneficiario no detectado. Enviando mensaje de verificación...");
+    return res.json({
+        mensaje: "⏳ *Estamos verificando su pago...*\n\n" +
+                 "Agradecemos su espera 🕕"
     });
 }
+
+// 🔹 Validar si el beneficiario contiene los nombres permitidos
+const nombresPermitidos = ["AMELIA", "YADIRA", "RUIZ", "QUIMI", "NELISSA", "MAROLA", "QUINTERO"];
+const beneficiarioValido = nombresPermitidos.some(nombre => 
+    datosExtraidos.beneficiario.toUpperCase().includes(nombre)
+);
+
+if (!beneficiarioValido) {
+    console.log(`🚨 Pago rechazado. Beneficiario no válido: ${datosExtraidos.beneficiario}`);
+    return res.json({
+        mensaje: "⛔ *Pago no válido.*\n\n" +
+                 "El pago no fue realizado a nuestra cuenta."
+    });
+}
+
 
 
 
