@@ -149,7 +149,7 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
                                 `📌 *Número:* ${results[0].documento}\n` +
                                 `🪀 *Enviado por:* ${numeroOculto}\n` +
                                 `🏷️ *Fecha:* ${fechaWhatsApp}\n` +
-                                `💰 *Monto:* $${results[0].valor}`;
+                                `💰 *Valor:* $${results[0].valor}`;
             
                 return res.json({ mensaje });
             }
