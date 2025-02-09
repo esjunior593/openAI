@@ -180,6 +180,7 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
  // 🔹 Lista de beneficiarios válidos con palabras clave separadas
 // 🔹 Lista de beneficiarios válidos
 // Definir nombres válidos
+// Definir nombres válidos
 const nombresValidos = [
     "AMELIA YADIRA RUIZ QUIMI",
     "NELISSA MAROLA QUINTERO QUIMI"
@@ -189,7 +190,10 @@ const nombresValidos = [
 const beneficiarioExtraido = (datosExtraidos.beneficiario || "").toUpperCase().trim();
 
 // 🔹 Verificar si el beneficiario es válido usando coincidencias parciales
-const esBeneficiarioValido = nombresValidos.some(nombre => beneficiarioExtraido.includes(nombre.split(" ")[0]) && beneficiarioExtraido.includes(nombre.split(" ")[1]));
+const esBeneficiarioValido = nombresValidos.some(nombre => {
+    const partesNombre = nombre.split(" "); // Divide el nombre en partes
+    return beneficiarioExtraido.includes(partesNombre[0]) && beneficiarioExtraido.includes(partesNombre[1]);
+});
 
 if (!esBeneficiarioValido) {
     console.log(`🚨 Pago rechazado. Beneficiario no válido: ${beneficiarioExtraido}`);
