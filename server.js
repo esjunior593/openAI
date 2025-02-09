@@ -147,8 +147,8 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
                 
                 const mensaje = `🚫 Este comprobante ya ha sido presentado por el número *${numeroOculto}*.\n\n` +
                                 `📌 *Número:* ${results[0].documento}\n` +
-                                `📞 *Enviado desde:* ${numeroOculto}\n` +
-                                `📅 *Fecha:* ${fechaWhatsApp}\n` +
+                                `🪀 *Enviado desde:* ${numeroOculto}\n` +
+                                `🔖 *Fecha:* ${fechaWhatsApp}\n` +
                                 `💰 *Monto:* $${results[0].valor}`;
             
                 return res.json({ mensaje });
@@ -186,10 +186,10 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
                     console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
             
                     // 🔹 Mensaje de confirmación con el número del remitente
-                    const mensaje = `🟢 *Nuevo pago* presentado desde el número *${from}*.\n\n` +
+                    const mensaje = `🟩 *_Nuevo pago presentado._*\n\n` +
                                     `📌 *Número:* ${datosExtraidos.documento}\n` +
-                                    `📞 *Enviado desde:* ${from}\n` +
-                                    `📅 *Fecha:* ${fechaWhatsApp}\n` +
+                                    `🪀 *Enviado desde:* ${from}\n` +
+                                    `🔖 *Fecha:* ${fechaWhatsApp}\n` +
                                     `💰 *Valor:* $${datosExtraidos.valor}\n\n`+
                                     `Estamos *verificando su pago* 💵...\n\nAgradecemos su espera 🕕`;
             
