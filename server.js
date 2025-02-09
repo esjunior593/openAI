@@ -76,9 +76,7 @@ app.post('/procesar', async (req, res) => {
 El número de comprobante puede aparecer con etiquetas como 'No.', 'Número:', 'Comprobante:', 'Transacción:', 'REF:', 'Referencia:', 'ID:', 'Registro:', 'Código:', o similares. 
 Si hay más de un número similar, prioriza el que esté junto a palabras clave como 'Comprobante', 'Referencia' o 'REF'. 
 Si el comprobante pertenece a 'Tu Banco Banco Aquí', el número de documento está inmediatamente después de la fecha en formato DD/MM/YYYY HH:MM:SS. 
-Encuentra la fecha en la imagen y extrae el primer número que aparece justo después. 
-⚠️ *NO confundas los números ni cambies dígitos. Si hay un número similar pero con un dígito distinto, verifica bien cuál es el correcto. 
-Si tienes duda entre dos números, elige el que tenga el formato más consistente con otros comprobantes.*",
+Encuentra la fecha en la imagen y extrae el primer número que aparece justo después.",
                                 "valor": "Monto del pago en formato numérico con dos decimales",
                                 "remitente": "Nombre de la persona que realizó la transferencia. 
 Debe estar en la sección de 'Cuenta de Origen', 'Desde', 'Ordenante', 'Remitente', 'Pagador' o 'Titular de Cuenta'. 
