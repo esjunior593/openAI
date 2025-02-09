@@ -181,6 +181,43 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
             console.log("📥 Intentando guardar en MySQL:", datosExtraidos);
 
    
+
+            // Lista de beneficiarios válidos con sus variaciones
+const beneficiariosValidos = [
+    "AMELIA YADIRA RUIZ QUIMI",
+    "NELISSA MAROLA QUINTERO QUIMI",
+    "AMELIA RUIZ",
+    "NELISSA QUINTERO",
+    "RUIZ QUIMI",
+    "QUINTERO QUIMI"
+];
+
+// Función para normalizar nombres (elimina tildes y convierte en mayúsculas)
+const normalizarTexto = (texto) => {
+    return texto
+        ? texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()
+        : "";
+};
+
+// Extraer y normalizar beneficiario detectado
+const beneficiarioDetectado = normalizarTexto(datosExtraidos.beneficiario);
+
+// Verificar si el beneficiario detectado está en la lista de beneficiarios válidos
+const esBeneficiarioValido = beneficiariosValidos.some(nombreValido =>
+    beneficiarioDetectado.includes(normalizarTexto(nombreValido))
+);
+
+// Si hay un beneficiario detectado y no es válido, rechazar el pago
+if (beneficiarioDetectado && !esBeneficiarioValido) {
+    console.log(`🚨 Pago rechazado. Beneficiario no válido: ${datosExtraidos.beneficiario}`);
+    return res.json({ 
+        mensaje: `⛔ *Pago no válido.*\n\n` +
+                 `El pago no fue realizado a nuestra cuenta.`
+    });
+}
+
+
+
             // 🔹 Insertar en la base de datos si no existe
             // 🔹 Insertar en la base de datos con el número de WhatsApp
             db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp) VALUES (?, ?, ?, ?, ?, ?, ?)',
