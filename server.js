@@ -148,7 +148,7 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
                 const mensaje = `🚫 Este comprobante ya ha sido presentado por el número *${numeroOculto}*.\n\n` +
                                 `📌 *Número:* ${results[0].documento}\n` +
                                 `📞 *Enviado desde:* ${numeroOculto}\n` +
-                                `📅 *Fecha de envío:* ${fechaWhatsApp}\n` +
+                                `📅 *Fecha:* ${fechaWhatsApp}\n` +
                                 `💰 *Monto:* $${results[0].valor}`;
             
                 return res.json({ mensaje });
@@ -189,7 +189,7 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
                     const mensaje = `🟢 *Nuevo pago* presentado desde el número *${from}*.\n\n` +
                                     `📌 *Número:* ${datosExtraidos.documento}\n` +
                                     `📞 *Enviado desde:* ${from}\n` +
-                                    `📅 *Fecha de envío:* ${fechaWhatsApp}\n` +
+                                    `📅 *Fecha:* ${fechaWhatsApp}\n` +
                                     `💰 *Valor:* $${datosExtraidos.valor}\n\n`+
                                     `Estamos *verificando su pago* 💵...\n\nAgradecemos su espera 🕕`;
             
