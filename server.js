@@ -117,29 +117,6 @@ if (!datosExtraidos.documento || !datosExtraidos.valor) {
     });
 }
 
-const nombresValidos = [
-    /AMELIA.*RUIZ.*QUIMI/i,  // Detecta cualquier variación con "Amelia", "Ruiz" y "Quimi"
-    /NELISSA.*QUINTERO.*QUIMI/i  // Detecta cualquier variación con "Nelissa", "Quintero" y "Quimi"
-];
-
-// 🔹 Validar si el beneficiario es válido
-const beneficiario = datosExtraidos.beneficiario?.toUpperCase().trim() || "";
-const esBeneficiarioValido = nombresValidos.some(regex => regex.test(beneficiario));
-
-if (!esBeneficiarioValido) {
-    console.log("🚨 Pago rechazado: La cuenta destino no es válida.");
-    
-    return res.json({ 
-        mensaje: "❌ *El pago no es válido.*\n\n" +
-                 "El titular de la cuenta destino no coincide con nuestros registros.\n\n" +
-                 "👉 *Verifique que la cuenta destino esté a nombre de:*\n" +
-                 "📌 *AMELIA YADIRA RUIZ QUIMI*\n" +
-                 "📌 *NELISSA MAROLA QUINTERO QUIMI*\n\n" +
-                 "Si hay un error, por favor contacte a soporte.\n\n" +
-                 "👉 *Soporte:* 0980757208 👈"
-    });
-}
-
 
         // 🔹 Verificar si el número de documento ya existe en la base de datos
         db.query('SELECT * FROM comprobantes WHERE documento = ?', [datosExtraidos.documento], (err, results) => {
@@ -200,6 +177,28 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
 
    
 
+  // 🔹 Validar si el beneficiario es válido
+  const beneficiariosValidos = [
+    "AMELIA YADIRA RUIZ QUIMI",
+    "NELISSA MAROLA QUINTERO QUIMI"
+];
+
+const beneficiarioRecibido = datosExtraidos.beneficiario ? datosExtraidos.beneficiario.toUpperCase() : "";
+
+// 🔹 Si el beneficiario está presente en el comprobante, validarlo
+if (beneficiarioRecibido && !beneficiariosValidos.some(nombre => beneficiarioRecibido.includes(nombre))) {
+    console.log("🚨 Pago rechazado. Beneficiario no válido:", beneficiarioRecibido);
+
+    return res.json({ 
+        mensaje: `⚠️ *Pago rechazado.*\n\n` +
+                 `El pago no fue realizado a una cuenta registrada.\n\n` +
+                 `Si crees que esto es un error, por favor contacta a soporte.\n\n` +
+                 `📞 *Soporte:* 0980757208`
+    });
+}
+
+
+
             // 🔹 Insertar en la base de datos si no existe
             // 🔹 Insertar en la base de datos con el número de WhatsApp
             db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -210,15 +209,16 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
                         return res.status(500).json({ error: err.message });
                     }
                     console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
-            
-                    // 🔹 Mensaje de confirmación con el número del remitente
+        
+                    // 🔹 Mensaje de confirmación en WhatsApp (SIN REMITENTE)
                     const mensaje = `🟢 *_Nuevo pago presentado._*\n\n` +
                                     `📌 *Número:* ${datosExtraidos.documento}\n` +
                                     `🪀 *Enviado por:* ${from}\n` +
-                                    `🏷️ *Fecha:* ${fechaWhatsApp}\n` +
-                                    `💰 *Valor:* $${datosExtraidos.valor}\n\n`+
-                                    `Estamos *verificando su pago*...\n\nAgradecemos su espera 🕕`;
-            
+                                    `🏷️ *Fecha:* ${fechaFormateada}\n` +
+                                    `💰 *Valor:* $${datosExtraidos.valor}\n\n` +
+                                    `Estamos *verificando su pago*...\n\n` +
+                                    `Agradecemos su espera 🕕`;
+        
                     res.json({ mensaje });
                 }
             );
