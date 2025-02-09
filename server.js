@@ -133,7 +133,7 @@ if (!datosExtraidos.documento || !datosExtraidos.valor) {
 const fechaFormateada = moment(fullDate, "dddd, MMMM D, YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss");
 
 // 🔹 Convertir fullDate al formato para WhatsApp
-const fechaWhatsApp = moment(results[0].fecha, "YYYY-MM-DD HH:mm:ss").format("DD-MM-YYYY HH:mm:ss");
+let fechaWhatsApp = moment(results[0].fecha, "YYYY-MM-DD HH:mm:ss").format("DD-MM-YYYY HH:mm:ss");
 
 
 // 🔹 Verificar si la fecha se convirtió correctamente
@@ -144,7 +144,7 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
 
 
                 // 🔹 Mensaje indicando que el comprobante ya fue usado
-                const fechaWhatsApp = moment(results[0].fecha, "YYYY-MM-DD HH:mm:ss").format("DD-MM-YYYY HH:mm:ss");
+                
                 const mensaje = `🚫 Este comprobante ya ha sido presentado por el número *${numeroOculto}*.\n\n` +
                                 `📌 *Número:* ${results[0].documento}\n` +
                                 `📞 *Enviado desde:* ${numeroOculto}\n` +
