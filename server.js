@@ -190,7 +190,7 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
                                     `📌 *Número:* ${datosExtraidos.documento}\n` +
                                     `📞 *Enviado desde:* ${from}\n` +
                                     `📅 *Fecha de envío:* ${fechaWhatsApp}\n` +
-                                    `💰 *Monto:* $${datosExtraidos.valor}\n\n`+
+                                    `💰 *Valor:* $${datosExtraidos.valor}\n\n`+
                                     `Estamos *verificando su pago* 💵...\n\nAgradecemos su espera 🕕`;
             
                     res.json({ mensaje });
