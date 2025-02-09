@@ -57,48 +57,46 @@ app.post('/procesar', async (req, res) => {
             return res.status(400).json({ mensaje: 'Error al procesar la imagen. Intente con otra URL.' });
         }
 
-        // 🔹 Detección de comprobantes falsos o editados
+        // 🔹 Detección mejorada de comprobantes falsos
         const detectionResponse = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: [
-                { role: "system", content: "Eres un experto en detección de comprobantes de pago falsos. Evalúa si la imagen ha sido editada o manipulada." },
+                { role: "system", content: "Eres un experto en autenticación de comprobantes de pago. Evalúa si esta imagen es original o si ha sido manipulada digitalmente." },
                 { 
                     role: "user", 
                     content: [
-                        { type: "text", text: "Analiza esta imagen y responde SOLO con 'true' si ha sido editada o modificada, o 'false' si es auténtico. No agregues ninguna otra palabra en la respuesta." },
+                        { type: "text", text: `Analiza esta imagen y responde en formato JSON con la siguiente estructura:
+                        {
+                            "es_falso": "true o false",
+                            "confianza": "Número entre 0 y 100 que indica qué tan seguro estás de que el comprobante es falso",
+                            "razon": "Explica por qué se considera falso si lo es"
+                        }` },
                         { type: "image_url", image_url: { url: base64Image.url } }
                     ]
                 }
             ],
-            max_tokens: 10,
+            max_tokens: 50,
+            response_format: { type: "json_object" }
         });
 
         console.log("📩 Respuesta de detección de falsificaciones:", JSON.stringify(detectionResponse, null, 2));
 
-        let esEditado;
+        let resultadoDeteccion;
         try {
-            const responseText = detectionResponse.choices[0].message.content.trim().toLowerCase();
-            
-            if (responseText === "true") {
-                esEditado = true;
-            } else if (responseText === "false") {
-                esEditado = false;
-            } else {
-                console.error("❌ Respuesta inesperada en detección de falsificaciones:", responseText);
-                return res.json({ mensaje: "⚠️ No se pudo verificar si el comprobante es falso. Intente nuevamente o contacte soporte." });
-            }
+            resultadoDeteccion = JSON.parse(detectionResponse.choices[0].message.content);
         } catch (error) {
-            console.error("❌ Error al procesar la respuesta de detección de falsificaciones:", error);
+            console.error("❌ Error al parsear respuesta de detección:", error);
             return res.json({ mensaje: "⚠️ No se pudo verificar si el comprobante es falso. Intente nuevamente o contacte soporte." });
         }
 
-        if (esEditado) {
+        if (resultadoDeteccion.es_falso === "true" && resultadoDeteccion.confianza > 80) {
             console.log("🚨 Se detectó un comprobante editado o falso.");
             return res.json({
-                mensaje: "🚨 *Alerta de comprobante falso*\n\n" +
-                         "⚠️ Se ha detectado que esta imagen podría estar editada o manipulada.\n" +
-                         "Si crees que esto es un error, contacta con soporte.\n\n" +
-                         "👉 *Soporte:* 0980757208 👈"
+                mensaje: `🚨 *Alerta de comprobante falso*\n\n` +
+                         `⚠️ Se ha detectado que esta imagen podría estar editada o manipulada con una confianza del ${resultadoDeteccion.confianza}%.\n` +
+                         `📌 *Razón:* ${resultadoDeteccion.razon}\n\n` +
+                         `Si crees que esto es un error, contacta con soporte.\n\n` +
+                         `👉 *Soporte:* 0980757208 👈`
             });
         }
 
@@ -129,14 +127,8 @@ app.post('/procesar', async (req, res) => {
         });
 
         console.log("📩 Respuesta de OpenAI:", JSON.stringify(response, null, 2));
-        
-        const datosExtraidos = JSON.parse(response.choices[0].message.content);
 
-        // Validar si OpenAI extrajo correctamente la información
-        if (!datosExtraidos.documento || !datosExtraidos.valor || !datosExtraidos.banco || !datosExtraidos.tipo) {
-            console.log("🚨 No se detectó un comprobante de pago en la imagen. Enviando mensaje de soporte.");
-            return res.json({ mensaje: "Si tiene algún problema con su servicio, escriba al número de Soporte por favor.\n\n👉 *Soporte:* 0980757208 👈" });
-        }
+        const datosExtraidos = JSON.parse(response.choices[0].message.content);
 
         // Verificar si el número de documento ya existe en la base de datos
         db.query('SELECT * FROM comprobantes WHERE documento = ?', [datosExtraidos.documento], (err, results) => {
