@@ -224,27 +224,39 @@ if (beneficiarioDetectado && !esBeneficiarioValido) {
             // 🔹 Insertar en la base de datos con el número de WhatsApp
             const { linea } = req.body; // Obtener la línea desde el body
 
+// 🔹 Insertar en la base de datos con el número de WhatsApp y línea
 db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp, linea) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
     [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.remitente || "Desconocido", fechaFormateada, datosExtraidos.tipo, datosExtraidos.banco, from, linea],
-                (err, result) => {
-                    if (err) {
-                        console.error("❌ Error en la inserción en MySQL:", err);
-                        return res.status(500).json({ error: err.message });
-                    }
-                    console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
-        
-                    // 🔹 Mensaje de confirmación en WhatsApp (SIN REMITENTE)
-                    const mensaje = `🟢 *_Nuevo pago presentado._*\n\n` +
-                                    `📌 *Número:* ${datosExtraidos.documento}\n` +
-                                    `🪀 *Enviado por:* ${from}\n` +
-                                    `🏷️ *Fecha:* ${fechaFormateada}\n` +
-                                    `💰 *Valor:* $${datosExtraidos.valor}\n\n` +
-                                    `Estamos *verificando su pago*...\n\n` +
-                                    `Agradecemos su espera 🕕`;
-        
-                    res.json({ mensaje });
-                }
-            );
+    (err, result) => {
+        if (err) {
+            console.error("❌ Error en la inserción en MySQL:", err);
+            return res.status(500).json({ error: err.message });
+        }
+
+        console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
+
+        // 🔹 Ahora guardar el número de WhatsApp en la tabla de contactos si el pago fue exitoso
+        db.query('INSERT IGNORE INTO contactos_whatsapp (whatsapp, linea) VALUES (?, ?)', [from, linea], (err, result) => {
+            if (err) {
+                console.error("❌ Error al guardar contacto en MySQL:", err);
+            } else {
+                console.log("📞 Contacto guardado:", from, "en", linea);
+            }
+        });
+
+        // 🔹 Mensaje de confirmación en WhatsApp
+        const mensaje = `🟢 *_Nuevo pago presentado._*\n\n` +
+                        `📌 *Número:* ${datosExtraidos.documento}\n` +
+                        `🪀 *Enviado por:* ${from}\n` +
+                        `🏷️ *Fecha:* ${fechaFormateada}\n` +
+                        `💰 *Valor:* $${datosExtraidos.valor}\n\n` +
+                        `Estamos *verificando su pago*...\n\n` +
+                        `Agradecemos su espera 🕕`;
+
+        res.json({ mensaje });
+    }
+);
+
         });
 
     } catch (error) {
