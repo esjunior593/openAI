@@ -50,7 +50,9 @@ app.post('/procesar', async (req, res) => {
         // 🔹 Imprimir todo el body para ver qué datos envía WhatsApp
         console.log("📥 Solicitud recibida desde WhatsApp:", req.body);
 
-        const { urlTempFile, from, fullDate } = req.body;
+        // 🔹 Extraer variables de req.body
+        const { urlTempFile, from, fullDate, historial } = req.body; 
+
         if (!urlTempFile) {
             return res.status(400).json({ mensaje: 'No se recibió una URL de imagen' });
         }
@@ -61,9 +63,10 @@ app.post('/procesar', async (req, res) => {
             return res.status(400).json({ mensaje: 'Error al procesar la imagen. Intente con otra URL.' });
         }
 
-
-// 🔹 Convertir historial en un solo string para que OpenAI lo analice mejor
-const historialTexto = historial ? historial.map(m => m.content).join("\n") : "No disponible";
+        // 🔹 Convertir historial en un solo string para que OpenAI lo analice mejor
+        const historialTexto = historial && Array.isArray(historial) 
+            ? historial.map(m => `${m.role}: ${m.content}`).join("\n") 
+            : "No disponible";
 
 
         // 🔹 Enviar a OpenAI con Base64 en lugar de URL
@@ -98,24 +101,24 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                                 "banco": "Nombre del banco que emitió el comprobante",
                                 "tipo": "Indicar 'Depósito' o 'Transferencia' según el comprobante"
                             }
-                    Además, revisa el historial de mensajes del cliente y extrae SOLO el servicio de streaming que mencionó antes de pagar. 
-                    Si identificas un servicio o producto en el historial, agrégalo bajo la clave "descripcion". 
-                    Si no se menciona nada, deja "descripcion": "No especificado".
-                    Devuelve solo el JSON, sin explicaciones ni texto adicional.`
-                },
-                { 
-                    type: "text", 
-                    text: `📜 Historial del cliente:\n${historialTexto}`
-                },
-                { 
-                    type: "image_url", 
-                    image_url: { url: base64Image.url } 
+                            Además, revisa el historial de mensajes del cliente y extrae SOLO el servicio de streaming que mencionó antes de pagar. 
+                            Si identificas un servicio o producto en el historial, agrégalo bajo la clave "descripcion". 
+                            Si no se menciona nada, deja "descripcion": "No especificado".
+                            Devuelve solo el JSON, sin explicaciones ni texto adicional.`
+                        },
+                        { 
+                            type: "text", 
+                            text: `📜 Historial del cliente:\n${historialTexto}`
+                        },
+                        { 
+                            type: "image_url", 
+                            image_url: { url: base64Image.url } 
+                        }
+                    ]
                 }
-            ]
-        }
-    ],
-    max_tokens: 300,
-});
+            ],
+            max_tokens: 300,
+        });
         
         // 🔹 Mostrar la respuesta de OpenAI en los logs de Railway
         console.log("📩 Respuesta de OpenAI:", JSON.stringify(response, null, 2));
