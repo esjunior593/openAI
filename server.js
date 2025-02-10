@@ -62,8 +62,8 @@ app.post('/procesar', async (req, res) => {
         }
 
 
-        // 🔹 Extraer historial del cliente si está disponible
-const { historial } = req.body; // Builder Bot envía esto con {history}
+// 🔹 Convertir historial en un solo string para que OpenAI lo analice mejor
+const historialTexto = historial ? historial.map(m => m.content).join("\n") : "No disponible";
 
 
         // 🔹 Enviar a OpenAI con Base64 en lugar de URL
@@ -98,13 +98,14 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                                 "banco": "Nombre del banco que emitió el comprobante",
                                 "tipo": "Indicar 'Depósito' o 'Transferencia' según el comprobante"
                             }
-                    Además, analiza el siguiente historial de mensajes del cliente para detectar qué servicio de streaming compró. 
-                    Si encuentras un servicio o producto en el historial, agrégalo a la respuesta JSON bajo la clave "descripcion". 
+                    Además, revisa el historial de mensajes del cliente y extrae SOLO el servicio de streaming que mencionó antes de pagar. 
+                    Si identificas un servicio o producto en el historial, agrégalo bajo la clave "descripcion". 
+                    Si no se menciona nada, deja "descripcion": "No especificado".
                     Devuelve solo el JSON, sin explicaciones ni texto adicional.`
                 },
                 { 
                     type: "text", 
-                    text: `Historial del cliente: ${historial || "No especificado"}`
+                    text: `📜 Historial del cliente:\n${historialTexto}`
                 },
                 { 
                     type: "image_url", 
