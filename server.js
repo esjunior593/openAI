@@ -63,10 +63,14 @@ app.post('/procesar', async (req, res) => {
             return res.status(400).json({ mensaje: 'Error al procesar la imagen. Intente con otra URL.' });
         }
 
-        // 🔹 Convertir historial en un solo string para que OpenAI lo analice mejor
-        const historialTexto = historial && Array.isArray(historial) 
-            ? historial.map(m => `${m.role}: ${m.content}`).join("\n") 
-            : "No disponible";
+        const historialTexto = historial && Array.isArray(historial) && historial.length > 0
+    ? historial.map(m => `${m.role}: ${m.content}`).join("\n")
+    : "No hay historial disponible.";
+
+// Filtrar mensajes relevantes del usuario
+const historialFiltrado = historial && Array.isArray(historial) 
+    ? historial.filter(m => m.role === "user").map(m => m.content).join("\n")
+    : "No especificado.";
 
 
         // 🔹 Enviar a OpenAI con Base64 en lugar de URL
@@ -108,7 +112,10 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                         },
                         { 
                             type: "text", 
-                            text: `📜 Historial del cliente:\n${historialTexto}`
+                            text: `📜 Historial del cliente:\n${historialTexto}\n\n
+                            📌 Extrae solo el último mensaje donde el usuario haya indicado qué servicio desea. 
+                            Si el historial contiene un mensaje como "quiero 1 netflix" o "deseo 2 Disney+", agrégalo bajo la clave "descripcion".
+                            Si el historial está vacío, deja "descripcion": "No especificado".`
                         },
                         { 
                             type: "image_url", 
