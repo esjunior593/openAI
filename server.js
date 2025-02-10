@@ -222,8 +222,10 @@ if (beneficiarioDetectado && !esBeneficiarioValido) {
 
             // 🔹 Insertar en la base de datos si no existe
             // 🔹 Insertar en la base de datos con el número de WhatsApp
-            db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.remitente || "Desconocido", fechaFormateada, datosExtraidos.tipo, datosExtraidos.banco, from],
+            const { linea } = req.body; // Obtener la línea desde el body
+
+db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp, linea) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.remitente || "Desconocido", fechaFormateada, datosExtraidos.tipo, datosExtraidos.banco, from, linea],
                 (err, result) => {
                     if (err) {
                         console.error("❌ Error en la inserción en MySQL:", err);
