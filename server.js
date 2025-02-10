@@ -236,13 +236,16 @@ db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, ba
         console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
 
         // 🔹 Ahora guardar el número de WhatsApp en la tabla de contactos si el pago fue exitoso
-        db.query('INSERT IGNORE INTO contactos_whatsapp (whatsapp, linea) VALUES (?, ?)', [from, linea], (err, result) => {
-            if (err) {
-                console.error("❌ Error al guardar contacto en MySQL:", err);
-            } else {
-                console.log("📞 Contacto guardado:", from, "en", linea);
-            }
-        });
+        const numeroFormateado = `+${from}`; // Agrega el `+` al número de WhatsApp
+
+db.query('INSERT IGNORE INTO contactos_whatsapp (whatsapp, linea) VALUES (?, ?)', 
+    [numeroFormateado, linea], (err, result) => {
+        if (err) {
+            console.error("❌ Error al guardar contacto en MySQL:", err);
+        } else {
+            console.log("📞 Contacto guardado:", numeroFormateado, "en", linea);
+        }
+});
 
         // 🔹 Mensaje de confirmación en WhatsApp
         const mensaje = `🟢 *_Nuevo pago presentado._*\n\n` +
