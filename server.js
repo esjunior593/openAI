@@ -61,12 +61,20 @@ app.post('/procesar', async (req, res) => {
             return res.status(400).json({ mensaje: 'Error al procesar la imagen. Intente con otra URL.' });
         }
 
+
+        // 🔹 Extraer historial del cliente si está disponible
+const { historial } = req.body; // Builder Bot envía esto con {history}
+
+
         // 🔹 Enviar a OpenAI con Base64 en lugar de URL
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
             response_format: { type: "json_object" },
             messages: [
-                { role: "system", content: "Eres un asistente experto en extraer información de comprobantes de pago. Devuelve solo un JSON con los datos requeridos, sin texto adicional." },
+                { 
+                    role: "system", 
+                    content: "Eres un asistente experto en extraer información de comprobantes de pago. Devuelve solo un JSON con los datos requeridos, sin texto adicional." 
+                },
                 { 
                     role: "user", 
                     content: [
@@ -90,14 +98,23 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                                 "banco": "Nombre del banco que emitió el comprobante",
                                 "tipo": "Indicar 'Depósito' o 'Transferencia' según el comprobante"
                             }
-                            Devuelve solo el JSON, sin explicaciones ni texto adicional.
-                        `},
-                        { type: "image_url", image_url: { url: base64Image.url } }
-                    ]
+                    Además, analiza el siguiente historial de mensajes del cliente para detectar qué servicio de streaming compró. 
+                    Si encuentras un servicio o producto en el historial, agrégalo a la respuesta JSON bajo la clave "descripcion". 
+                    Devuelve solo el JSON, sin explicaciones ni texto adicional.`
+                },
+                { 
+                    type: "text", 
+                    text: `Historial del cliente: ${historial || "No especificado"}`
+                },
+                { 
+                    type: "image_url", 
+                    image_url: { url: base64Image.url } 
                 }
-            ],
-            max_tokens: 300,
-        });
+            ]
+        }
+    ],
+    max_tokens: 300,
+});
         
         // 🔹 Mostrar la respuesta de OpenAI en los logs de Railway
         console.log("📩 Respuesta de OpenAI:", JSON.stringify(response, null, 2));
@@ -225,8 +242,8 @@ if (beneficiarioDetectado && !esBeneficiarioValido) {
             const { linea } = req.body; // Obtener la línea desde el body
 
 // 🔹 Insertar en la base de datos con el número de WhatsApp y línea
-db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp, linea) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.remitente || "Desconocido", fechaFormateada, datosExtraidos.tipo, datosExtraidos.banco, from, linea],
+db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp, linea, descripcion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.remitente || "Desconocido", fechaFormateada, datosExtraidos.tipo, datosExtraidos.banco, from, linea, datosExtraidos.descripcion || "No especificado"],
     (err, result) => {
         if (err) {
             console.error("❌ Error en la inserción en MySQL:", err);
