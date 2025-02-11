@@ -67,10 +67,16 @@ app.post('/procesar', async (req, res) => {
     ? historial.map(m => `${m.role}: ${m.content}`).join("\n")
     : "No hay historial disponible.";
 
-// Filtrar mensajes relevantes del usuario
+// 🔹 Filtrar solo los mensajes del usuario
 const historialFiltrado = historial && Array.isArray(historial) 
     ? historial.filter(m => m.role === "user").map(m => m.content).join("\n")
-    : "No especificado.";
+    : "No hay mensajes relevantes del usuario.";
+
+// 🔹 Extraer solo el último mensaje relevante del usuario
+const ultimoMensajeUsuario = historial && Array.isArray(historial) 
+    ? historial.filter(m => m.role === "user").map(m => m.content).pop() || "No hay mensajes previos del usuario."
+    : "No hay mensajes previos del usuario.";
+
 
 
         // 🔹 Enviar a OpenAI con Base64 en lugar de URL
@@ -112,10 +118,10 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                         },
                         { 
                             type: "text", 
-                            text: `📜 Historial del cliente:\n${historialTexto}\n\n
-                            📌 Extrae solo el último mensaje donde el usuario haya indicado qué servicio desea. 
-                            Si el historial contiene un mensaje como "quiero 1 netflix" o "deseo 2 Disney+", agrégalo bajo la clave "descripcion".
-                            Si el historial está vacío, deja "descripcion": "No especificado".`
+    text: `📜 Historial del cliente:\n${historialFiltrado}\n\n
+    📌 Extrae solo el último mensaje del usuario donde haya indicado qué servicio desea. 
+    Si hay un mensaje como "quiero 1 netflix" o "deseo 2 Disney+", agrégalo bajo la clave "descripcion".
+    Si el historial está vacío o no contiene información del servicio, deja "descripcion": "No especificado".`
                         },
                         { 
                             type: "image_url", 
