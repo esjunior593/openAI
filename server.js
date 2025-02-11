@@ -63,19 +63,10 @@ app.post('/procesar', async (req, res) => {
             return res.status(400).json({ mensaje: 'Error al procesar la imagen. Intente con otra URL.' });
         }
 
-        const historialTexto = historial && Array.isArray(historial) && historial.length > 0
-    ? historial.map(m => `${m.role}: ${m.content}`).join("\n")
-    : "No hay historial disponible.";
-
-// 🔹 Filtrar solo los mensajes del usuario
-const historialFiltrado = historial && Array.isArray(historial) 
-    ? historial.filter(m => m.role === "user").map(m => m.content).join("\n")
-    : "No hay mensajes relevantes del usuario.";
-
-// 🔹 Extraer solo el último mensaje relevante del usuario
-const ultimoMensajeUsuario = historial && Array.isArray(historial) 
-    ? historial.reverse().find(m => m.role === "user" && /netflix|prime video|disney\+|max|spotify|paramount|crunchyroll/i.test(m.content))?.content || "No hay mensajes previos del usuario."
-    : "No hay mensajes previos del usuario.";
+    // 🔹 Filtrar el historial y obtener el último mensaje del asistente donde confirma el servicio
+const historialServicio = historial && Array.isArray(historial)
+? historial.reverse().find(m => m.role === "assistant" && /netflix|prime video|disney\+|max|spotify|paramount|crunchyroll/i.test(m.content))?.content || "No hay mensajes previos con un servicio."
+: "No hay mensajes previos con un servicio.";
 
 
 
@@ -120,25 +111,17 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                         },
                         { 
                             type: "text", 
-                            text: `📜 Último mensaje relevante del cliente:\n${ultimoMensajeUsuario}\n\n
-📌 Extrae solo el servicio que el cliente solicitó, sin palabras adicionales como "quiero", "deseo", "me gustaría", "estoy interesado", "necesito", "voy a comprar" y sus variaciones o sinónimos. 
-
-📌 Reglas para extraer correctamente el servicio:
-1. Si el usuario menciona "pantalla" o "dispositivo", usa "Dispositivo" como estándar.
-2. Si no se menciona cantidad, asume que es "1".
-3. Devuelve solo la cantidad y el nombre del servicio en la clave "descripcion".
-
-📌 Ejemplos correctos:
-- "me gustaría 1 netflix" → "1 Dispositivo de Netflix"
-- "ayúdeme con 1 netflix" → "1 Dispositivo de Netflix"
-- "quiero 1 netflix" → "1 Dispositivo de Netflix"
-- "estoy interesado en 1 netflix" → "1 Dispositivo de Netflix"
-- "quiero 1 pantalla de max" → "1 Dispositivo de Max"
-- "deseo 2 Disney+" → "2 Dispositivos de Disney+"
-- "voy a comprar 3 dispositivos de Prime Video" → "3 Dispositivos de Prime Video"
-
-📌 **IMPORTANTE:**  
-Devuelve solo el servicio bajo la clave "descripcion". Si no hay información del servicio, usa "No especificado".`
+                            text: `📜 Último mensaje del asistente confirmando el servicio:\n${historialServicio}\n\n
+📌 **Extrae SOLO el servicio confirmado por el asistente.**  
+📌 **Reglas estrictas:**  
+1. Si el asistente menciona "pantalla" o "dispositivo", usa "Dispositivo".  
+2. Si hay un número antes del servicio, úsalo como cantidad. Si no hay número, asume "1".  
+3. Devuelve la cantidad y el servicio en este formato:  
+   - "El plan que deseas es Disney para 2 dispositivos" → "2 Dispositivos de Disney+"  
+   - "Tu elección es 3 pantallas de Max" → "3 Dispositivos de Max"  
+   - "Confirmaste 4 Prime Video" → "4 Dispositivos de Prime Video"  
+4. **No uses respuestas como "sí", "ok", "quiero pagar".** Solo el mensaje del asistente con el servicio.  
+5. **Devuelve solo el JSON con "descripcion", sin explicaciones adicionales.**`
 }, 
                         { 
                             type: "image_url", 
