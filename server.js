@@ -119,7 +119,7 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                         },
                         { 
                             type: "text", 
-text: `📜 Historial del cliente:\n${historialFiltrado}\n\n
+text: `📜 Último mensaje relevante del cliente:\n${ultimoMensajeUsuario}\n\n
 📌 Extrae solo el servicio que el cliente solicitó, sin palabras adicionales como "quiero", "deseo", "me gustaría", "estoy interesado", "necesito", "voy a comprar" y sus variaciones o sinónimos. 
 
 📌 Reglas para extraer correctamente el servicio:
