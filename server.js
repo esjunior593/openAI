@@ -109,20 +109,34 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                             Si no se menciona nada, deja "descripcion": "No especificado".
                             Devuelve solo el JSON, sin explicaciones ni texto adicional.`
                         },
-                        { 
-                            type: "text", 
+                        {
+                            type: "text",
                             text: `📜 Último mensaje del asistente confirmando el servicio:\n${historialServicio}\n\n
-📌 **Extrae SOLO el servicio confirmado por el asistente.**  
-📌 **Reglas estrictas:**  
-1. Si el asistente menciona "pantalla" o "dispositivo", usa "Dispositivo".  
-2. Si hay un número antes del servicio, úsalo como cantidad. Si no hay número, asume "1".  
-3. Devuelve la cantidad y el servicio en este formato:  
-   - "El plan que deseas es Disney para 2 dispositivos" → "2 Dispositivos de Disney+"  
-   - "Tu elección es 3 pantallas de Max" → "3 Dispositivos de Max"  
-   - "Confirmaste 4 Prime Video" → "4 Dispositivos de Prime Video"  
-4. **No uses respuestas como "sí", "ok", "quiero pagar".** Solo el mensaje del asistente con el servicio.  
-5. **Devuelve solo el JSON con "descripcion", sin explicaciones adicionales.**`
-}, 
+                        📌 **Reglas para extraer correctamente el servicio comprado:**
+                        1️⃣ **Si el asistente menciona "pantalla" o "dispositivo", usa "Dispositivo".**  
+                        2️⃣ **Si hay un número antes del servicio, úsalo como cantidad. Si no hay número, asume "1".**  
+                        3️⃣ **Extrae solo la cantidad y el nombre del servicio en la clave "descripcion" en este formato:**  
+                           - "El plan que elegiste es *Disney* para *2 dispositivos*" → "2 Dispositivos de Disney+"
+                           - "Confirmaste *3 pantallas* de *Max*" → "3 Dispositivos de Max"
+                           - "Tu selección fue *1 Prime Video*" → "1 Dispositivo de Prime Video"
+                           - "Voy a activarte *5 cuentas* de *Spotify*" → "5 Dispositivos de Spotify"
+                        
+                        4️⃣ **No uses respuestas como "sí", "ok", "voy a pagar".** Solo el mensaje del asistente con el servicio.  
+                        5️⃣ **Si el asistente no mencionó un servicio, devuelve "No especificado".**  
+                        6️⃣ **Si el usuario dijo un servicio pero sin cantidad, asume "1".**  
+                        7️⃣ **Si el asistente menciona "cuentas", trátalo como "Dispositivos".**
+                        
+                        📌 **Servicios válidos** (puede haber más, pero estos son comunes):  
+                        Netflix, Prime Video, Disney+, Max, Spotify, Paramount, Crunchyroll.
+                        
+                        📌 **Ejemplos de extracción correcta:**  
+                        - "Quiero *2 pantallas de Netflix*" → "2 Dispositivos de Netflix"  
+                        - "Voy a pedir *3 cuentas de Prime Video*" → "3 Dispositivos de Prime Video"  
+                        - "Tu plan es *4 Disney+*" → "4 Dispositivos de Disney+"  
+                        - "Confirmaste *1 Paramount*" → "1 Dispositivo de Paramount"
+                        
+                        ⚠️ **Devuelve solo el JSON con "descripcion", sin explicaciones adicionales.**`
+                        }, // **← Aquí agregamos la coma faltante**
                         { 
                             type: "image_url", 
                             image_url: { url: base64Image.url } 
