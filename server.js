@@ -68,6 +68,10 @@ const historialServicio = historial && Array.isArray(historial)
 ? historial.reverse().find(m => m.role === "assistant" && /netflix|prime video|disney\+|max|spotify|paramount|crunchyroll/i.test(m.content))?.content || "No hay mensajes previos con un servicio."
 : "No hay mensajes previos con un servicio.";
 
+// Si el historial está vacío, asignamos un valor por defecto
+const ultimoMensajeUsuario = historial && Array.isArray(historial) && historial.length > 0 
+    ? historial.reverse().find(m => m.role === "user" && /netflix|prime video|disney\+|max|spotify|paramount|crunchyroll/i.test(m.content))?.content || "No hay mensajes previos del usuario."
+    : "No hay mensajes previos del usuario.";
 
 
 
