@@ -120,22 +120,19 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                         { 
                             type: "text", 
                             text: `📜 Último mensaje relevante del cliente:\n${ultimoMensajeUsuario}\n\n
-                        📌 Extrae solo el servicio que el cliente solicitó en su último mensaje. 
-                        
-                        📌 Reglas para extraer correctamente el servicio:
-                        1. **Toma solo el último mensaje donde el usuario menciona un servicio.**
-                        2. Si el usuario menciona "pantalla" o "dispositivo", usa "Dispositivo" como estándar.
-                        3. **No ignores la cantidad mencionada antes del servicio.**
-                        4. Si no menciona cantidad, asume que es "1".
-                        5. Devuelve solo la cantidad y el nombre del servicio en la clave "descripcion".
-                        
-                        📌 Ejemplos correctos:
-                        - "me gustaría 1 netflix" → "1 Dispositivo de Netflix"
-                        - "quiero 2 pantallas de max" → "2 Dispositivos de Max"
-                        - "voy a comprar 3 dispositivos de Prime Video" → "3 Dispositivos de Prime Video"
-                        - "estoy interesado en 3 pantallas de Spotify" → "3 Dispositivos de Spotify"
-                        
-                        📌 **No ignores la cantidad.** Si el usuario dice "quiero 3 pantallas de Spotify", la respuesta debe ser "3 Dispositivos de Spotify". Si no menciona cantidad, usa "1".
+📌 Extrae solo el servicio que el cliente solicitó en su último mensaje. 
+Si menciona "pantalla" o "dispositivo", usa "Dispositivo" como estándar. 
+Si menciona una cantidad antes del servicio, úsala. Si no menciona cantidad, asume "1". 
+No tomes mensajes antiguos, solo el más reciente donde el usuario menciona un servicio.
+
+📌 Ejemplos correctos:
+- "me gustaría 1 netflix" → "1 Dispositivo de Netflix"
+- "quiero 2 pantallas de max" → "2 Dispositivos de Max"
+- "voy a comprar 3 dispositivos de Prime Video" → "3 Dispositivos de Prime Video"
+- "estoy interesado en 4 pantallas de Netflix" → "4 Dispositivos de Netflix"
+
+📌 **Importante:** Si el usuario menciona un número antes del servicio, NO lo ignores. Si no menciona cantidad, usa "1". 
+Devuelve solo el servicio bajo la clave "descripcion". Si no hay información del servicio, usa "No especificado".
                         
                         Devuelve solo el servicio bajo la clave "descripcion". Si no hay información del servicio, usa "No especificado".`
                         },
