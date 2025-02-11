@@ -74,8 +74,9 @@ const historialFiltrado = historial && Array.isArray(historial)
 
 // 🔹 Extraer solo el último mensaje relevante del usuario
 const ultimoMensajeUsuario = historial && Array.isArray(historial) 
-    ? historial.filter(m => m.role === "user").map(m => m.content).pop() || "No hay mensajes previos del usuario."
+    ? historial.reverse().find(m => m.role === "user" && /netflix|prime video|disney\+|max|spotify|paramount|crunchyroll/i.test(m.content))?.content || "No hay mensajes previos del usuario."
     : "No hay mensajes previos del usuario.";
+
 
 
 
