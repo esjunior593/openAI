@@ -80,6 +80,7 @@ const ultimoMensajeUsuario = historial && Array.isArray(historial)
 
 
 
+
         // 🔹 Enviar a OpenAI con Base64 en lugar de URL
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
@@ -120,30 +121,25 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                         { 
                             type: "text", 
                             text: `📜 Último mensaje relevante del cliente:\n${ultimoMensajeUsuario}\n\n
-                        📌 **Extrae SOLO el servicio solicitado en el último mensaje del usuario.**  
-                        📌 **Sigue estas reglas estrictamente:**  
-                        1. **Si el usuario menciona "pantalla" o "dispositivo", usa "Dispositivo" como estándar.**  
-                        2. **Si menciona una cantidad antes del servicio, úsala.** **NO ignores la cantidad.**  
-                        3. **Si no menciona cantidad, usa "1" por defecto.**  
-                        4. **El formato de salida debe ser estrictamente JSON:**
-                        \`\`\`
-                        {
-                          "descripcion": "[cantidad] Dispositivo(s) de [Servicio]"
-                        }
-                        \`\`\`
-                        
-                        📌 **Ejemplos correctos:**
-                        - "me gustaría 1 netflix" → **"1 Dispositivo de Netflix"**
-                        - "quiero 2 pantallas de max" → **"2 Dispositivos de Max"**
-                        - "voy a comprar 3 dispositivos de Prime Video" → **"3 Dispositivos de Prime Video"**
-                        - "para 3 pantallas Netflix" → **"3 Dispositivos de Netflix"**
-                        
-                        📌 **⚠️ IMPORTANTE:**  
-                        - **Si el usuario menciona un número antes del servicio, NO lo ignores.**  
-                        - **Si no menciona cantidad, usa "1".**  
-                        - **Devuelve SOLO el JSON con la clave "descripcion".**  
-                        - **NO agregues texto adicional fuera del JSON.**`
-                        },
+📌 Extrae solo el servicio que el cliente solicitó, sin palabras adicionales como "quiero", "deseo", "me gustaría", "estoy interesado", "necesito", "voy a comprar" y sus variaciones o sinónimos. 
+
+📌 Reglas para extraer correctamente el servicio:
+1. Si el usuario menciona "pantalla" o "dispositivo", usa "Dispositivo" como estándar.
+2. Si no se menciona cantidad, asume que es "1".
+3. Devuelve solo la cantidad y el nombre del servicio en la clave "descripcion".
+
+📌 Ejemplos correctos:
+- "me gustaría 1 netflix" → "1 Dispositivo de Netflix"
+- "ayúdeme con 1 netflix" → "1 Dispositivo de Netflix"
+- "quiero 1 netflix" → "1 Dispositivo de Netflix"
+- "estoy interesado en 1 netflix" → "1 Dispositivo de Netflix"
+- "quiero 1 pantalla de max" → "1 Dispositivo de Max"
+- "deseo 2 Disney+" → "2 Dispositivos de Disney+"
+- "voy a comprar 3 dispositivos de Prime Video" → "3 Dispositivos de Prime Video"
+
+📌 **IMPORTANTE:**  
+Devuelve solo el servicio bajo la clave "descripcion". Si no hay información del servicio, usa "No especificado".`
+}, 
                         { 
                             type: "image_url", 
                             image_url: { url: base64Image.url } 
