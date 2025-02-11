@@ -90,7 +90,9 @@ const historialServicio = historial && Array.isArray(historial)
 El número de comprobante puede aparecer con etiquetas como 'No.', 'Número:', 'Comprobante:', 'Transacción:', 'REF:', 'Referencia:', 'ID:', 'Registro:', 'Código:', o similares. 
 Si hay más de un número similar, prioriza el que esté junto a palabras clave como 'Comprobante', 'Referencia' o 'REF'. 
 Si el comprobante pertenece a 'Tu Banco Banco Aquí', el número de documento está inmediatamente después de la fecha en formato DD/MM/YYYY HH:MM:SS. 
-Encuentra la fecha en la imagen y extrae el primer número que aparece justo después.",
+Encuentra la fecha en la imagen y extrae el primer número que aparece justo después."
+⚠️ Si no encuentras un número de comprobante válido, usa la fecha de la transacción en el formato 'YYYYMMDDHHMMSS' como número de comprobante. 
+Ejemplo: si la fecha en la imagen es '2025-02-02 20:27:11', el número de documento debe ser '20250202202711'.",
                                 "valor": "Monto del pago en formato numérico con dos decimales",
                                 "remitente": "Nombre de la persona que realizó la transferencia. 
 Debe estar en la sección de 'Cuenta de Origen', 'Desde', 'Ordenante', 'Remitente', 'Pagador' o 'Titular de Cuenta'. 
@@ -232,7 +234,7 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
 
    
 
-// Lista de beneficiarios válidos
+// 🔹 Lista de beneficiarios válidos
 const beneficiariosValidos = [
     "AMELIA YADIRA RUIZ QUIMI",
     "NELISSA MAROLA QUINTERO QUIMI",
@@ -242,58 +244,56 @@ const beneficiariosValidos = [
     "QUINTERO QUIMI"
 ];
 
-// Función para normalizar nombres (elimina tildes y convierte en mayúsculas)
+// 🔹 Función para normalizar nombres (evita problemas con tildes)
 const normalizarTexto = (texto) => {
     return texto
-        ? texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase()
+        ? texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()
         : "";
 };
 
-// 🔹 Si OpenAI no detectó beneficiario, asignar el banco como beneficiario
-if (!datosExtraidos.beneficiario || datosExtraidos.beneficiario === "No especificado") {
-    console.log("🔍 Beneficiario no detectado, asignando el banco como beneficiario...");
-    datosExtraidos.beneficiario = datosExtraidos.banco || "No identificado";
+// 🔹 Si no se detecta información clave, asumir que la imagen NO es un comprobante de pago
+const esImagenDePago = datosExtraidos.documento && datosExtraidos.valor && datosExtraidos.banco;
+if (!esImagenDePago) {
+    console.log("🚨 No se detectó un comprobante de pago en la imagen.");
+    return res.json({
+        mensaje: "❌ *No se detectó un comprobante de pago en la imagen.*\n\n" +
+                 "Si necesita asistencia, escriba al número de Soporte.\n\n" +
+                 "👉 *Soporte:* 0980757208 👈"
+    });
 }
 
-// Normalizar nombres detectados
-const beneficiarioDetectado = normalizarTexto(datosExtraidos.beneficiario);
+// 🔹 Si OpenAI no detectó beneficiario, verificar antes de asignar el banco
+if (!datosExtraidos.beneficiario || datosExtraidos.beneficiario === "No especificado") {
+    console.log("🔍 Beneficiario no detectado, verificando si el banco puede ser válido...");
+
+    // 🔹 Si el banco contiene "BANCO", lo aceptamos como beneficiario
+    if (datosExtraidos.banco && normalizarTexto(datosExtraidos.banco).includes("BANCO")) {
+        datosExtraidos.beneficiario = datosExtraidos.banco;
+        console.log(`✅ Se asignó el banco como beneficiario: ${datosExtraidos.banco}`);
+    } else {
+        console.log("🚨 Beneficiario no detectado y el banco no es válido. Rechazando el pago...");
+        return res.json({
+            mensaje: "⛔ *Pago no válido.*\n\n" +
+                     "No se detectó un beneficiario válido en el comprobante. Por favor, revise los datos del pago."
+        });
+    }
+}
 
 // 🔹 Verificar si el beneficiario detectado está en la lista de beneficiarios válidos o es un banco
+const beneficiarioDetectado = normalizarTexto(datosExtraidos.beneficiario);
 const esBeneficiarioValido = beneficiariosValidos.some(nombreValido =>
     beneficiarioDetectado.includes(normalizarTexto(nombreValido))
-) || datosExtraidos.beneficiario.includes("BANCO");
+) || beneficiarioDetectado.includes("BANCO");
 
-// 🔹 Validación del número de documento
-const numeroDocumento = datosExtraidos.documento;
-const regexDocumentoValido = /^\d{5,}$/; // Al menos 5 dígitos consecutivos
-
-if (!numeroDocumento || !regexDocumentoValido.test(numeroDocumento)) {
-    console.log("⚠️ Número de documento inválido o no detectado. Requiere verificación manual.");
-    datosExtraidos.documento = "VERIFICACIÓN MANUAL";
-}
-
-// 🔹 Si el beneficiario sigue sin ser válido, rechazar el pago
+// 🔹 Si el beneficiario no es válido, rechazar el pago con un mensaje claro
 if (!esBeneficiarioValido) {
     console.log(`🚨 Pago rechazado. Beneficiario no válido: ${datosExtraidos.beneficiario}`);
-    return res.json({ 
-        mensaje: `⛔ *Pago no válido.*\n\n` +
-                 `El pago no fue realizado a nuestra cuenta.\n\n` +
-                 `Si realizó un pago, por favor, contacte a soporte para verificarlo.\n` +
-                 "👉 *Soporte:* 0980757208 👈"
-    });
-}
-
-// 🔹 Si el número de documento es "VERIFICACIÓN MANUAL", no guardar en MySQL y solicitar verificación
-if (datosExtraidos.documento === "VERIFICACIÓN MANUAL") {
-    console.log("🚨 Documento no detectado correctamente. Se requiere verificación manual.");
     return res.json({
-        mensaje: `⚠️ *Verificación manual requerida.*\n\n` +
-                 `No se pudo determinar el número de comprobante de manera automática.\n\n` +
-                 `Por favor, contacte a soporte para revisar este pago.\n` +
-                 "👉 *Soporte:* 0980757208 👈"
+        mensaje: "⛔ *Pago no válido.*\n\n" +
+                 "El pago no fue realizado a nuestra cuenta.\n\n" +
+                 "Si realizó un pago, por favor, contacte a soporte para verificarlo."
     });
 }
-
 
 
 
