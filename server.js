@@ -232,7 +232,7 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
 
    
 
-           // Lista de beneficiarios válidos
+// 🔹 Lista de beneficiarios válidos
 const beneficiariosValidos = [
     "AMELIA YADIRA RUIZ QUIMI",
     "NELISSA MAROLA QUINTERO QUIMI",
@@ -242,33 +242,56 @@ const beneficiariosValidos = [
     "QUINTERO QUIMI"
 ];
 
-// Función para normalizar nombres (elimina tildes y convierte en mayúsculas)
+// 🔹 Función para normalizar nombres (evita problemas con tildes)
 const normalizarTexto = (texto) => {
     return texto
         ? texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()
         : "";
 };
 
-// 🔹 Si OpenAI no detectó beneficiario, asignar el banco como beneficiario
-if (!datosExtraidos.beneficiario || datosExtraidos.beneficiario === "No especificado") {
-    console.log("🔍 Beneficiario no detectado, asignando el banco como beneficiario...");
-    datosExtraidos.beneficiario = datosExtraidos.banco || "No identificado";
+// 🔹 Si OpenAI no detectó datos importantes, determinar si es una imagen de pago o no
+const esImagenDePago = datosExtraidos.documento && datosExtraidos.valor && datosExtraidos.banco;
+
+// 🔹 Si no se detecta información clave, asumir que la imagen NO es un comprobante de pago
+if (!esImagenDePago) {
+    console.log("🚨 No se detectó un comprobante de pago en la imagen.");
+    return res.json({
+        mensaje: "❌ *No se detectó un pago válido.*\n\n" +
+                 "Si tiene algún problema con su servicio, escriba al número de Soporte.\n\n" +
+                 "👉 *Soporte:* 0980757208 👈"
+    });
 }
 
-// Normalizar nombres detectados
-const beneficiarioDetectado = normalizarTexto(datosExtraidos.beneficiario);
+// 🔹 Si OpenAI no detectó beneficiario, validar antes de asignar el banco
+if (!datosExtraidos.beneficiario || datosExtraidos.beneficiario === "No especificado") {
+    console.log("🔍 Beneficiario no detectado, verificando si el banco puede ser válido...");
+    if (datosExtraidos.banco.includes("BANCO")) {
+        datosExtraidos.beneficiario = datosExtraidos.banco;
+    } else {
+        console.log("🚨 El banco detectado no es válido como beneficiario. Rechazando el pago...");
+        return res.json({
+            mensaje: "❌ *Pago no válido.*\n\n" +
+                     "El pago no fue realizado a nuestra cuenta.\n\n" +
+                     "Si tiene algún problema con su servicio, escriba al número de Soporte.\n\n" +
+                     "👉 *Soporte:* 0980757208 👈"
+        });
+    }
+}
 
-// 🔹 Verificar si el beneficiario detectado está en la lista de beneficiarios válidos o es un banco
+// 🔹 Verificar si el beneficiario detectado está en la lista de beneficiarios válidos
+const beneficiarioDetectado = normalizarTexto(datosExtraidos.beneficiario);
 const esBeneficiarioValido = beneficiariosValidos.some(nombreValido =>
     beneficiarioDetectado.includes(normalizarTexto(nombreValido))
-) || datosExtraidos.beneficiario.includes("BANCO");
+);
 
-// 🔹 Si el beneficiario sigue sin ser válido, rechazar el pago
+// 🔹 Si el beneficiario no es válido, rechazar el pago
 if (!esBeneficiarioValido) {
     console.log(`🚨 Pago rechazado. Beneficiario no válido: ${datosExtraidos.beneficiario}`);
-    return res.json({ 
-        mensaje: `⛔ *Pago no válido.*\n\n` +
-                 `El pago no fue realizado a nuestra cuenta.`
+    return res.json({
+        mensaje: "❌ *Pago no válido.*\n\n" +
+                 "El pago no fue realizado a nuestra cuenta.\n\n" +
+                 "Si tiene algún problema con su servicio, escriba al número de Soporte.\n\n" +
+                 "👉 *Soporte:* 0980757208 👈"
     });
 }
 
