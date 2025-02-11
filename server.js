@@ -120,21 +120,29 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                         { 
                             type: "text", 
                             text: `📜 Último mensaje relevante del cliente:\n${ultimoMensajeUsuario}\n\n
-📌 Extrae solo el servicio que el cliente solicitó en su último mensaje. 
-Si menciona "pantalla" o "dispositivo", usa "Dispositivo" como estándar. 
-Si menciona una cantidad antes del servicio, úsala. Si no menciona cantidad, asume "1". 
-No tomes mensajes antiguos, solo el más reciente donde el usuario menciona un servicio.
-
-📌 Ejemplos correctos:
-- "me gustaría 1 netflix" → "1 Dispositivo de Netflix"
-- "quiero 2 pantallas de max" → "2 Dispositivos de Max"
-- "voy a comprar 3 dispositivos de Prime Video" → "3 Dispositivos de Prime Video"
-- "estoy interesado en 4 pantallas de Netflix" → "4 Dispositivos de Netflix"
-
-📌 **Importante:** Si el usuario menciona un número antes del servicio, NO lo ignores. Si no menciona cantidad, usa "1". 
-Devuelve solo el servicio bajo la clave "descripcion". Si no hay información del servicio, usa "No especificado".
+                        📌 **Extrae SOLO el servicio solicitado en el último mensaje del usuario.**  
+                        📌 **Sigue estas reglas estrictamente:**  
+                        1. **Si el usuario menciona "pantalla" o "dispositivo", usa "Dispositivo" como estándar.**  
+                        2. **Si menciona una cantidad antes del servicio, úsala.** **NO ignores la cantidad.**  
+                        3. **Si no menciona cantidad, usa "1" por defecto.**  
+                        4. **El formato de salida debe ser estrictamente JSON:**
+                        \`\`\`
+                        {
+                          "descripcion": "[cantidad] Dispositivo(s) de [Servicio]"
+                        }
+                        \`\`\`
                         
-                        Devuelve solo el servicio bajo la clave "descripcion". Si no hay información del servicio, usa "No especificado".`
+                        📌 **Ejemplos correctos:**
+                        - "me gustaría 1 netflix" → **"1 Dispositivo de Netflix"**
+                        - "quiero 2 pantallas de max" → **"2 Dispositivos de Max"**
+                        - "voy a comprar 3 dispositivos de Prime Video" → **"3 Dispositivos de Prime Video"**
+                        - "para 3 pantallas Netflix" → **"3 Dispositivos de Netflix"**
+                        
+                        📌 **⚠️ IMPORTANTE:**  
+                        - **Si el usuario menciona un número antes del servicio, NO lo ignores.**  
+                        - **Si no menciona cantidad, usa "1".**  
+                        - **Devuelve SOLO el JSON con la clave "descripcion".**  
+                        - **NO agregues texto adicional fuera del JSON.**`
                         },
                         { 
                             type: "image_url", 
