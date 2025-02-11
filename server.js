@@ -119,12 +119,15 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                         { 
                             type: "text", 
                             text: `📜 Historial del cliente:\n${historialFiltrado}\n\n
-                            📌 Extrae solo el servicio que el cliente solicitó, sin palabras adicionales como "quiero" o "deseo". 
+                            📌 Extrae solo el servicio que el cliente solicitó, sin palabras adicionales como "quiero", "deseo", "me gustaría", "estoy interesdo", "deseo" y estas variaciones o sinónimos. 
                             Por ejemplo:
+                            - "me gustaría 1 netflix" → "1 Netflix"
+                            - "ayudeme con 1 netflix" → "1 Netflix"
                               - "quiero 1 netflix" → "1 Netflix"
                               - "estoy interesado 1 netflix" → "1 Netflix"
                               - "quiero 1 pantalla de max" → "1 Pantalla de Max"
                               - "deseo 2 Disney+" → "2 Disney+"
+                            
                             
                             Devuelve solo el servicio bajo la clave "descripcion". Si no hay información del servicio, usa "No especificado".`
                         },
