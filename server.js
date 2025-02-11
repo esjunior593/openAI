@@ -91,7 +91,6 @@ El número de comprobante puede aparecer con etiquetas como 'No.', 'Número:', '
 Si hay más de un número similar, prioriza el que esté junto a palabras clave como 'Comprobante', 'Referencia' o 'REF'. 
 Si el comprobante pertenece a 'Tu Banco Banco Aquí', el número de documento está inmediatamente después de la fecha en formato DD/MM/YYYY HH:MM:SS. 
 Encuentra la fecha en la imagen y extrae el primer número que aparece justo después.
-⚠️ Si el comprobante contiene un campo 'SECUENCIAL' o 'N° SECUENCIAL', usa ese número como comprobante en lugar de la fecha.
 ⚠️ Si no encuentras un número de comprobante válido, usa la fecha de la transacción en el formato 'YYYYMMDDHHMMSS' como número de comprobante. 
 Ejemplo: si la fecha en la imagen es '2025-02-02 20:27:11', el número de documento debe ser '20250202202711'.",
                                 "valor": "Monto del pago en formato numérico con dos decimales",
