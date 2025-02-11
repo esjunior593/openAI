@@ -226,7 +226,7 @@ if (!fechaFormateada || fechaFormateada === "Invalid date") {
 
    
 
-            // Lista de beneficiarios válidos con sus variaciones
+            // Lista de beneficiarios válidos
 const beneficiariosValidos = [
     "AMELIA YADIRA RUIZ QUIMI",
     "NELISSA MAROLA QUINTERO QUIMI",
@@ -243,7 +243,13 @@ const normalizarTexto = (texto) => {
         : "";
 };
 
-// Extraer y normalizar beneficiario detectado
+// 🔹 Si OpenAI no detectó beneficiario o es "No especificado", usar el banco en su lugar
+if (!datosExtraidos.beneficiario || datosExtraidos.beneficiario === "No especificado") {
+    console.log("🔍 Beneficiario no detectado, asignando el banco como beneficiario...");
+    datosExtraidos.beneficiario = datosExtraidos.banco || "No identificado";
+}
+
+// Normalizar nombres detectados
 const beneficiarioDetectado = normalizarTexto(datosExtraidos.beneficiario);
 
 // Verificar si el beneficiario detectado está en la lista de beneficiarios válidos
@@ -251,15 +257,14 @@ const esBeneficiarioValido = beneficiariosValidos.some(nombreValido =>
     beneficiarioDetectado.includes(normalizarTexto(nombreValido))
 );
 
-// Si hay un beneficiario detectado y no es válido, rechazar el pago
-if (beneficiarioDetectado && !esBeneficiarioValido) {
+// 🔹 Si el beneficiario sigue sin ser válido, rechazar el pago
+if (!esBeneficiarioValido) {
     console.log(`🚨 Pago rechazado. Beneficiario no válido: ${datosExtraidos.beneficiario}`);
     return res.json({ 
         mensaje: `⛔ *Pago no válido.*\n\n` +
                  `El pago no fue realizado a nuestra cuenta.`
     });
 }
-
 
 
             // 🔹 Insertar en la base de datos si no existe
