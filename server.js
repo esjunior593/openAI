@@ -111,31 +111,32 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                         },
                         {
                             type: "text",
-                            text: `📜 Último mensaje del asistente confirmando el servicio:\n${historialServicio}\n\n
-                    📌 **Reglas para extraer correctamente el servicio comprado:**
-                    1️⃣ **Si el asistente menciona "pantalla" o "dispositivo", usa "Dispositivo".**  
-                    2️⃣ **Si hay un número antes del servicio, úsalo como cantidad de dispositivos.**  
-                    3️⃣ **Si el asistente menciona una duración (ej. "1 mes", "2 meses"), inclúyela en la descripción.**  
-                    4️⃣ **Si hay más de un servicio en la compra, devuelve todos en un solo string, separados por comas.**  
-                    
-                    Ejemplo:
-                    - Has elegido *Netflix* para *1 dispositivo* por *$3.50* y *Disney* para *1 dispositivo* por *$4.00*.  
-                      → "1 Dispositivo de Netflix por 1 mes, 1 Dispositivo de Disney+ por 1 mes"
-                    
-                    5️⃣ **No uses respuestas como "sí", "ok", "voy a pagar".** Solo el mensaje del asistente con el servicio.  
-                    6️⃣ **Si el asistente no mencionó un servicio, devuelve "No especificado".**  
-                    7️⃣ **Si el usuario dijo un servicio pero sin cantidad, asume "1".**  
-                    8️⃣ **Si el asistente menciona "cuentas", trátalo como "Dispositivos".**  
-                    
-                    📌 **Servicios válidos** (puede haber más, pero estos son comunes):  
-                    Netflix, Prime Video, Disney+, Max, Spotify, Paramount, Crunchyroll.
-                    
-                    📌 **Ejemplo de extracción correcta:**  
-                    - "Has elegido el plan de *Netflix* para *1 dispositivo* por *$3.50* y el plan de *Disney* para *1 dispositivo* por *$4.00*."  
-                      → "1 Dispositivo de Netflix por 1 mes, 1 Dispositivo de Disney+ por 1 mes"  
-                    
-                    ⚠️ **Devuelve solo el JSON con "descripcion", sin explicaciones adicionales.**`
+                            text: `📜 Último mensaje del asistente confirmando el servicio:\n${historialServicio}\n
+                        📜 Último mensaje del usuario antes o después del pago:\n${ultimoMensajeUsuario}\n\n
+                        
+                        📌 **Reglas para extraer correctamente el servicio comprado:**
+                        1️⃣ **Si el asistente o usuario menciona "pantalla", "dispositivo" o "cuenta", reemplázalo con "p".**  
+                        2️⃣ **Si hay un número antes del servicio, úsalo como cantidad de p.**  
+                        3️⃣ **Si el asistente menciona una duración (ej. "1 mes", "2 meses"), inclúyela en la descripción.**  
+                        4️⃣ **Si el usuario menciona el servicio en el mismo mensaje del pago o en otro mensaje después, también consíderalo.**  
+                        5️⃣ **Extrae solo la cantidad de "p", duración y nombre del servicio en la clave "descripcion" en este formato:**  
+                           - "El plan que elegiste es *Disney* para *2 dispositivos* por *2 meses*" → "2 p Disney+ por 2 meses"  
+                           - "Confirmaste *3 pantallas* de *Max* por *1 mes*" → "3 p Max por 1 mes"  
+                           - "Voy a activarte *5 cuentas* de *Spotify* por *3 meses*" → "5 p Spotify por 3 meses"  
+                           - "Plan de *Netflix* por *1 mes*" → "1 p Netflix por 1 mes"  
+                           - "Ayúdeme con una cuenta de *Netflix*" → "1 p Netflix"  
+                           - "Quiero *3 pantallas* de *Prime Video*" → "3 p Prime Video"  
+                        6️⃣ **No uses respuestas como "sí", "ok", "voy a pagar".** Solo el mensaje del asistente o del usuario con el servicio.  
+                        7️⃣ **Si el asistente no mencionó un servicio y el usuario tampoco, devuelve "No especificado".**  
+                        8️⃣ **Si el usuario mencionó un servicio pero sin cantidad, asume "1".**  
+                        9️⃣ **Si el usuario menciona el servicio en otro mensaje después de enviar la imagen, también úsalo.**  
+                        
+                        📌 **Servicios válidos** (puede haber más, pero estos son comunes):  
+                        Netflix, Prime Video, Disney+, Max, Spotify, Paramount, Crunchyroll.
+                        
+                        ⚠️ **Devuelve solo el JSON con "descripcion", sin explicaciones adicionales.**`
                         },
+                        
                          // **← Aquí agregamos la coma faltante**
                         { 
                             type: "image_url", 
