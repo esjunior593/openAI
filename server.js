@@ -249,31 +249,27 @@ const normalizarTexto = (texto) => {
         : "";
 };
 
-// 🔹 Si OpenAI no detectó datos importantes, determinar si es una imagen de pago o no
-const esImagenDePago = datosExtraidos.documento && datosExtraidos.valor && datosExtraidos.banco;
-
 // 🔹 Si no se detecta información clave, asumir que la imagen NO es un comprobante de pago
+const esImagenDePago = datosExtraidos.documento && datosExtraidos.valor && datosExtraidos.banco;
 if (!esImagenDePago) {
     console.log("🚨 No se detectó un comprobante de pago en la imagen.");
     return res.json({
-        mensaje: "❌ *No se detectó un pago válido.*\n\n" +
-                 "Si tiene algún problema con su servicio, escriba al número de Soporte.\n\n" +
+        mensaje: "❌ *No se detectó un comprobante de pago en la imagen.*\n\n" +
+                 "Si necesita asistencia, escriba al número de Soporte.\n\n" +
                  "👉 *Soporte:* 0980757208 👈"
     });
 }
 
-// 🔹 Si OpenAI no detectó beneficiario, validar antes de asignar el banco
+// 🔹 Si OpenAI no detectó beneficiario, verificar antes de asignar el banco
 if (!datosExtraidos.beneficiario || datosExtraidos.beneficiario === "No especificado") {
     console.log("🔍 Beneficiario no detectado, verificando si el banco puede ser válido...");
     if (datosExtraidos.banco.includes("BANCO")) {
         datosExtraidos.beneficiario = datosExtraidos.banco;
     } else {
-        console.log("🚨 El banco detectado no es válido como beneficiario. Rechazando el pago...");
+        console.log("🚨 Beneficiario no detectado y el banco no es válido. Rechazando el pago...");
         return res.json({
-            mensaje: "❌ *Pago no válido.*\n\n" +
-                     "El pago no fue realizado a nuestra cuenta.\n\n" +
-                     "Si tiene algún problema con su servicio, escriba al número de Soporte.\n\n" +
-                     "👉 *Soporte:* 0980757208 👈"
+            mensaje: "⛔ *Pago no válido.*\n\n" +
+                     "No se detectó un beneficiario válido en el comprobante. Por favor, revise los datos del pago."
         });
     }
 }
@@ -284,14 +280,13 @@ const esBeneficiarioValido = beneficiariosValidos.some(nombreValido =>
     beneficiarioDetectado.includes(normalizarTexto(nombreValido))
 );
 
-// 🔹 Si el beneficiario no es válido, rechazar el pago
+// 🔹 Si el beneficiario no es válido, rechazar el pago con un mensaje claro
 if (!esBeneficiarioValido) {
     console.log(`🚨 Pago rechazado. Beneficiario no válido: ${datosExtraidos.beneficiario}`);
     return res.json({
-        mensaje: "❌ *Pago no válido.*\n\n" +
+        mensaje: "⛔ *Pago no válido.*\n\n" +
                  "El pago no fue realizado a nuestra cuenta.\n\n" +
-                 "Si tiene algún problema con su servicio, escriba al número de Soporte.\n\n" +
-                 "👉 *Soporte:* 0980757208 👈"
+                 "Si realizó un pago, por favor, contacte a soporte para verificarlo."
     });
 }
 
