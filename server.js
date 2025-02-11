@@ -119,24 +119,29 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                         },
                         { 
                             type: "text", 
-text: `📜 Último mensaje relevante del cliente:\n${ultimoMensajeUsuario}\n\n
-📌 Extrae solo el servicio que el cliente solicitó, sin palabras adicionales como "quiero", "deseo", "me gustaría", "estoy interesado", "necesito", "voy a comprar" y sus variaciones o sinónimos. 
-
-📌 Reglas para extraer correctamente el servicio:
-1. Si el usuario menciona "pantalla" o "dispositivo", usa "Dispositivo" como estándar.
-2. Si no se menciona cantidad, asume que es "1".
-3. Devuelve solo la cantidad y el nombre del servicio en la clave "descripcion".
-
-Ejemplos de extracción correcta:
-- "me gustaría 1 netflix" → "1 Dispositivo de Netflix"
-- "ayúdeme con 1 netflix" → "1 Dispositivo de Netflix"
-- "quiero 1 netflix" → "1 Dispositivo de Netflix"
-- "estoy interesado en 1 netflix" → "1 Dispositivo de Netflix"
-- "quiero 1 pantalla de max" → "1 Dispositivo de Max"
-- "deseo 2 Disney+" → "2 Dispositivos de Disney+"
-- "voy a comprar 3 dispositivos de Prime Video" → "3 Dispositivos de Prime Video"
-
-Devuelve solo el servicio bajo la clave "descripcion". Si no hay información del servicio, usa "No especificado".`
+                            text: `📜 Último mensaje relevante del cliente:\n${ultimoMensajeUsuario}\n\n
+                        📌 Extrae solo el servicio que el cliente solicitó, sin palabras adicionales como "quiero", "deseo", "me gustaría", "estoy interesado", "necesito", "voy a comprar" y sus variaciones o sinónimos. 
+                        
+                        📌 Reglas para extraer correctamente el servicio:
+                        1. Si el usuario menciona "pantalla" o "dispositivo", usa "Dispositivo" como estándar.
+                        2. Si menciona una cantidad antes del servicio, úsala. **No la ignores.**
+                        3. Si no menciona cantidad, asume que es "1".
+                        4. Devuelve solo la cantidad y el nombre del servicio en la clave "descripcion".
+                        
+                        📌 Ejemplos de extracción correcta:
+                        - "me gustaría 1 netflix" → "1 Dispositivo de Netflix"
+                        - "ayúdeme con 1 netflix" → "1 Dispositivo de Netflix"
+                        - "quiero 1 netflix" → "1 Dispositivo de Netflix"
+                        - "estoy interesado en 1 netflix" → "1 Dispositivo de Netflix"
+                        - "quiero 2 pantallas de max" → "2 Dispositivos de Max"
+                        - "deseo 3 Disney+" → "3 Dispositivos de Disney+"
+                        - "voy a comprar 4 dispositivos de Prime Video" → "4 Dispositivos de Prime Video"
+                        
+                        📌 Importante: **No ignores la cantidad mencionada por el usuario antes del servicio.**
+                        Si el usuario dice "quiero 2 pantallas de Max", la respuesta debe ser "2 Dispositivos de Max".
+                        Si no menciona cantidad, usa "1".
+                        
+                        Devuelve solo el servicio bajo la clave "descripcion". Si no hay información del servicio, usa "No especificado".`
                         },
                         { 
                             type: "image_url", 
