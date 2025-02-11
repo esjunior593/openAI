@@ -118,18 +118,24 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
                         },
                         { 
                             type: "text", 
-                            text: `📜 Historial del cliente:\n${historialFiltrado}\n\n
-                            📌 Extrae solo el servicio que el cliente solicitó, sin palabras adicionales como "quiero", "deseo", "me gustaría", "estoy interesdo", "deseo" y estas variaciones o sinónimos. 
-                            Por ejemplo:
-                            - "me gustaría 1 netflix" → "1 Netflix"
-                            - "ayudeme con 1 netflix" → "1 Netflix"
-                              - "quiero 1 netflix" → "1 Netflix"
-                              - "estoy interesado 1 netflix" → "1 Netflix"
-                              - "quiero 1 pantalla de max" → "1 Pantalla de Max"
-                              - "deseo 2 Disney+" → "2 Disney+"
-                            
-                            
-                            Devuelve solo el servicio bajo la clave "descripcion". Si no hay información del servicio, usa "No especificado".`
+text: `📜 Historial del cliente:\n${historialFiltrado}\n\n
+📌 Extrae solo el servicio que el cliente solicitó, sin palabras adicionales como "quiero", "deseo", "me gustaría", "estoy interesado", "necesito", "voy a comprar" y sus variaciones o sinónimos. 
+
+📌 Reglas para extraer correctamente el servicio:
+1. Si el usuario menciona "pantalla" o "dispositivo", usa "Dispositivo" como estándar.
+2. Si no se menciona cantidad, asume que es "1".
+3. Devuelve solo la cantidad y el nombre del servicio en la clave "descripcion".
+
+Ejemplos de extracción correcta:
+- "me gustaría 1 netflix" → "1 Dispositivo de Netflix"
+- "ayúdeme con 1 netflix" → "1 Dispositivo de Netflix"
+- "quiero 1 netflix" → "1 Dispositivo de Netflix"
+- "estoy interesado en 1 netflix" → "1 Dispositivo de Netflix"
+- "quiero 1 pantalla de max" → "1 Dispositivo de Max"
+- "deseo 2 Disney+" → "2 Dispositivos de Disney+"
+- "voy a comprar 3 dispositivos de Prime Video" → "3 Dispositivos de Prime Video"
+
+Devuelve solo el servicio bajo la clave "descripcion". Si no hay información del servicio, usa "No especificado".`
                         },
                         { 
                             type: "image_url", 
