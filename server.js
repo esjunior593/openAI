@@ -263,8 +263,11 @@ if (!esImagenDePago) {
 // 🔹 Si OpenAI no detectó beneficiario, verificar antes de asignar el banco
 if (!datosExtraidos.beneficiario || datosExtraidos.beneficiario === "No especificado") {
     console.log("🔍 Beneficiario no detectado, verificando si el banco puede ser válido...");
-    if (datosExtraidos.banco.includes("BANCO")) {
+
+    // 🔹 Si el banco contiene "BANCO", lo aceptamos como beneficiario
+    if (datosExtraidos.banco && normalizarTexto(datosExtraidos.banco).includes("BANCO")) {
         datosExtraidos.beneficiario = datosExtraidos.banco;
+        console.log(`✅ Se asignó el banco como beneficiario: ${datosExtraidos.banco}`);
     } else {
         console.log("🚨 Beneficiario no detectado y el banco no es válido. Rechazando el pago...");
         return res.json({
@@ -274,11 +277,11 @@ if (!datosExtraidos.beneficiario || datosExtraidos.beneficiario === "No especifi
     }
 }
 
-// 🔹 Verificar si el beneficiario detectado está en la lista de beneficiarios válidos
+// 🔹 Verificar si el beneficiario detectado está en la lista de beneficiarios válidos o es un banco
 const beneficiarioDetectado = normalizarTexto(datosExtraidos.beneficiario);
 const esBeneficiarioValido = beneficiariosValidos.some(nombreValido =>
     beneficiarioDetectado.includes(normalizarTexto(nombreValido))
-);
+) || beneficiarioDetectado.includes("BANCO");
 
 // 🔹 Si el beneficiario no es válido, rechazar el pago con un mensaje claro
 if (!esBeneficiarioValido) {
@@ -289,6 +292,7 @@ if (!esBeneficiarioValido) {
                  "Si realizó un pago, por favor, contacte a soporte para verificarlo."
     });
 }
+
 
 
 
