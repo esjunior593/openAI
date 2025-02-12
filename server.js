@@ -377,7 +377,8 @@ db.query(
 
         // 🔹 Enviar notificación al grupo de WhatsApp con el número de pedido
         console.log("📤 Enviando notificación con línea:", linea);
-        enviarNotificacionGrupo(from, linea ? linea : "Línea desconocida", idPedido);
+        // 🔹 Enviar notificación al grupo con el ID del pedido correcto
+enviarNotificacionGrupo(from, linea, idPedido, descripcionPedido);
 
         // 🔹 Mensaje de confirmación en WhatsApp
         const mensaje = `🟢 *_Nuevo pago presentado._*\n\n` +
