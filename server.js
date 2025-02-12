@@ -25,15 +25,12 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
-const enviarNotificacionGrupo = async (from, linea, idPedido, descripcion) => {
+const enviarNotificacionGrupo = async (from, linea, idPedido) => {
     const numeroGrupo = "IS4l9VDVzxg4o0tNsHCLvJ"; // Reemplaza con el ID real del grupo de WhatsApp
-
-    // 🔹 Si la descripción no está definida, poner "No especificado"
-    const descripcionPedido = descripcion && descripcion !== "No especificado" ? descripcion : "No especificado";
 
     const mensajeGrupo = {
         messages: { 
-            content: `📢 *Pedido #${idPedido}* en la [*${linea}*]  [${from}]  [🛒 Desea: *${descripcionPedido}*]` 
+            content: `📢 *Pedido #${idPedido}* en la [*${linea}*]  [${from}]`
         },
         number: numeroGrupo,
         checkIfExists: false
@@ -55,6 +52,7 @@ const enviarNotificacionGrupo = async (from, linea, idPedido, descripcion) => {
         console.error("❌ Error al enviar la notificación al grupo:", error);
     }
 };
+
 
 
 
@@ -370,7 +368,7 @@ db.query(
              ? datosExtraidos.descripcion
              : "No especificado";
              
- enviarNotificacionGrupo(from, linea, idPedido, descripcionPedido);
+ enviarNotificacionGrupo(from, linea, idPedido);
  
         // 🔹 Guardar el número de WhatsApp en la tabla de contactos
         const numeroFormateado = `+${from}`;
