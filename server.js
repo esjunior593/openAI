@@ -355,7 +355,8 @@ db.query('INSERT IGNORE INTO contactos_whatsapp (whatsapp, linea) VALUES (?, ?)'
 });
 
  // 🔹 Enviar notificación al grupo de WhatsApp
- enviarNotificacionGrupo(from, datosExtraidos.descripcion, linea);
+ console.log("📤 Enviando notificación con línea:", linea);
+ enviarNotificacionGrupo(from, linea ? linea : "Línea desconocida");
 
         // 🔹 Mensaje de confirmación en WhatsApp
         const mensaje = `🟢 *_Nuevo pago presentado._*\n\n` +
