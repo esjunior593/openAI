@@ -329,6 +329,7 @@ if (!esBeneficiarioValido) {
             // 🔹 Insertar en la base de datos si no existe
             // 🔹 Insertar en la base de datos con el número de WhatsApp
             const { linea } = req.body; // Obtener la línea desde el body
+            console.log("📌 Línea recibida:", linea);
 
 // 🔹 Insertar en la base de datos con el número de WhatsApp y línea
 db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp, linea, descripcion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
