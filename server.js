@@ -25,6 +25,34 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
+// 🔹 Enviar notificación al grupo de WhatsApp si el pago es válido
+const enviarNotificacionGrupo = async (from, linea) => {
+    const numeroGrupo = "IS4l9VDVzxg4o0tNsHCLvJ"; // Reemplaza con el ID del grupo de WhatsApp
+
+    const mensajeGrupo = {
+        messages: {
+            content: `📢 *Nuevo pedido de* ${from} en la ${linea}`
+        },
+        number: numeroGrupo,
+        checkIfExists: false
+    };
+
+    try {
+        const response = await fetch("https://app.builderbot.cloud/api/v2/aba27186-52d4-470c-bf2b-13d81bff3c0e/messages", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer bb-b8f2049c-afa4-4d23-882a-04ab90f95a70" // Reemplaza con tu token de BuilderBot
+            },
+            body: JSON.stringify(mensajeGrupo)
+        });
+
+        const result = await response.json();
+        console.log("📤 Notificación enviada al grupo:", result);
+    } catch (error) {
+        console.error("❌ Error al enviar la notificación al grupo:", error);
+    }
+};
 
 const getBase64FromUrl = async (imageUrl) => {
     try {
@@ -338,7 +366,19 @@ db.query('INSERT IGNORE INTO contactos_whatsapp (whatsapp, linea) VALUES (?, ?)'
 
         res.json({ mensaje });
     }
+    
 );
+// 🔹 Llamar la función después de guardar en la base de datos
+enviarNotificacionGrupo(from, linea);
+
+// 🔹 Responder con éxito
+return res.json({
+    mensaje: `✅ *Pago recibido exitosamente.*\n\n` +
+             `📌 *Número:* ${datosExtraidos.documento}\n` +
+             `💰 *Valor:* $${datosExtraidos.valor}\n` +
+             `📅 *Fecha:* ${datosExtraidos.fecha}\n\n` +
+             `Estamos procesando tu pedido. ¡Gracias por tu compra! 🎉`
+});
 
         });
 
