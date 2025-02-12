@@ -25,11 +25,11 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
-const enviarNotificacionGrupo = async (from, linea) => {
-    const numeroGrupo = "IS4l9VDVzxg4o0tNsHCLvJ"; // Reemplaza con el ID real del grupo
+const enviarNotificacionGrupo = async (from, linea, idPedido) => {
+    const numeroGrupo = "IS4l9VDVzxg4o0tNsHCLvJ"; // Reemplaza con el ID real del grupo de WhatsApp
 
     const mensajeGrupo = {
-        messages: { content: `📢 *Nuevo pedido de* ${from} en la ${linea}` },
+        messages: { content: `📢 *Pedido #${idPedido}:* [${from}] en la ${linea}` },
         number: numeroGrupo,
         checkIfExists: false
     };
@@ -39,7 +39,7 @@ const enviarNotificacionGrupo = async (from, linea) => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-api-builderbot": process.env.BUILDERBOT_TOKEN  // 👈 API Key segura en entorno
+                "x-api-builderbot": process.env.BUILDERBOT_TOKEN
             },
             body: JSON.stringify(mensajeGrupo)
         });
@@ -50,6 +50,7 @@ const enviarNotificacionGrupo = async (from, linea) => {
         console.error("❌ Error al enviar la notificación al grupo:", error);
     }
 };
+
 
 
 const getBase64FromUrl = async (imageUrl) => {
@@ -332,34 +333,49 @@ if (!esBeneficiarioValido) {
             console.log("📌 Línea recibida:", linea);
 
 // 🔹 Insertar en la base de datos con el número de WhatsApp y línea
-db.query('INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp, linea, descripcion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [datosExtraidos.documento, datosExtraidos.valor, datosExtraidos.remitente || "Desconocido", fechaFormateada, datosExtraidos.tipo, datosExtraidos.banco, from, linea, datosExtraidos.descripcion || "No especificado"],
+db.query(
+    'INSERT INTO comprobantes (documento, valor, remitente, fecha, tipo, banco, whatsapp, linea, descripcion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [
+        datosExtraidos.documento,
+        datosExtraidos.valor,
+        datosExtraidos.remitente || "Desconocido",
+        fechaFormateada,
+        datosExtraidos.tipo,
+        datosExtraidos.banco,
+        from,
+        linea,
+        datosExtraidos.descripcion || "No especificado"
+    ],
     (err, result) => {
         if (err) {
             console.error("❌ Error en la inserción en MySQL:", err);
             return res.status(500).json({ error: err.message });
         }
 
-        console.log("✅ Comprobante guardado en la base de datos:", datosExtraidos.documento);
+        const idPedido = result.insertId; // 🔹 Obtener el ID generado automáticamente
+        console.log("✅ Comprobante guardado en la base de datos con ID:", idPedido);
 
-        // 🔹 Ahora guardar el número de WhatsApp en la tabla de contactos si el pago fue exitoso
-        const numeroFormateado = `+${from}`; // Agrega el `+` al número de WhatsApp
+        // 🔹 Guardar el número de WhatsApp en la tabla de contactos
+        const numeroFormateado = `+${from}`;
+        db.query(
+            'INSERT IGNORE INTO contactos_whatsapp (whatsapp, linea) VALUES (?, ?)',
+            [numeroFormateado, linea],
+            (err, result) => {
+                if (err) {
+                    console.error("❌ Error al guardar contacto en MySQL:", err);
+                } else {
+                    console.log("📞 Contacto guardado:", numeroFormateado, "en", linea);
+                }
+            }
+        );
 
-db.query('INSERT IGNORE INTO contactos_whatsapp (whatsapp, linea) VALUES (?, ?)', 
-    [numeroFormateado, linea], (err, result) => {
-        if (err) {
-            console.error("❌ Error al guardar contacto en MySQL:", err);
-        } else {
-            console.log("📞 Contacto guardado:", numeroFormateado, "en", linea);
-        }
-});
-
- // 🔹 Enviar notificación al grupo de WhatsApp
- console.log("📤 Enviando notificación con línea:", linea);
- enviarNotificacionGrupo(from, linea ? linea : "Línea desconocida");
+        // 🔹 Enviar notificación al grupo de WhatsApp con el número de pedido
+        console.log("📤 Enviando notificación con línea:", linea);
+        enviarNotificacionGrupo(from, linea ? linea : "Línea desconocida", idPedido);
 
         // 🔹 Mensaje de confirmación en WhatsApp
         const mensaje = `🟢 *_Nuevo pago presentado._*\n\n` +
+                        `📢 *Pedido #${idPedido}*\n` +  // 🔹 Ahora incluye el número de pedido
                         `📌 *Número:* ${datosExtraidos.documento}\n` +
                         `🪀 *Enviado por:* ${from}\n` +
                         `🏷️ *Fecha:* ${fechaFormateada}\n` +
@@ -369,7 +385,6 @@ db.query('INSERT IGNORE INTO contactos_whatsapp (whatsapp, linea) VALUES (?, ?)'
 
         res.json({ mensaje });
     }
-    
 );
 
 
