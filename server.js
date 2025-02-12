@@ -26,7 +26,7 @@ const db = mysql.createPool({
 });
 
 const enviarNotificacionGrupo = async (from, linea) => {
-    const numeroGrupo = "IS4l9VDVzxg4o0tNsHCLvJ"; // Reemplaza con el ID real del grupo de WhatsApp
+    const numeroGrupo = "IS4l9VDVzxg4o0tNsHCLvJ"; // Reemplaza con el ID real del grupo
 
     const mensajeGrupo = {
         messages: { content: `📢 *Nuevo pedido de* ${from} en la ${linea}` },
@@ -39,7 +39,7 @@ const enviarNotificacionGrupo = async (from, linea) => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-api-builderbot": process.env.BUILDERBOT_TOKEN // 👈 Usamos la cabecera correcta
+                "x-api-builderbot": process.env.BUILDERBOT_TOKEN  // 👈 API Key segura en entorno
             },
             body: JSON.stringify(mensajeGrupo)
         });
@@ -50,6 +50,7 @@ const enviarNotificacionGrupo = async (from, linea) => {
         console.error("❌ Error al enviar la notificación al grupo:", error);
     }
 };
+
 
 const getBase64FromUrl = async (imageUrl) => {
     try {
