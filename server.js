@@ -25,14 +25,11 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
-// 🔹 Enviar notificación al grupo de WhatsApp si el pago es válido
 const enviarNotificacionGrupo = async (from, linea) => {
-    const numeroGrupo = "IS4l9VDVzxg4o0tNsHCLvJ"; // Reemplaza con el ID del grupo de WhatsApp
+    const numeroGrupo = "IS4l9VDVzxg4o0tNsHCLvJ"; // Reemplaza con el ID real del grupo de WhatsApp
 
     const mensajeGrupo = {
-        messages: {
-            content: `📢 *Nuevo pedido de* ${from} en la ${linea}`
-        },
+        messages: { content: `📢 *Nuevo pedido de* ${from} en la ${linea}` },
         number: numeroGrupo,
         checkIfExists: false
     };
@@ -42,7 +39,7 @@ const enviarNotificacionGrupo = async (from, linea) => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": "Bearer bb-b8f2049c-afa4-4d23-882a-04ab90f95a70" // Reemplaza con tu token de BuilderBot
+                "x-api-builderbot": process.env.BUILDERBOT_TOKEN // 👈 Usamos la cabecera correcta
             },
             body: JSON.stringify(mensajeGrupo)
         });
