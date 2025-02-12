@@ -29,7 +29,7 @@ const enviarNotificacionGrupo = async (from, linea, idPedido) => {
     const numeroGrupo = "IS4l9VDVzxg4o0tNsHCLvJ"; // Reemplaza con el ID real del grupo de WhatsApp
 
     const mensajeGrupo = {
-        messages: { content: `📢 *Pedido #${idPedido}:* [${from}] en la ${linea}` },
+        messages: { content: `📢 *Pedido #${idPedido}:* [${from}] en la *_${linea}_*` },
         number: numeroGrupo,
         checkIfExists: false
     };
