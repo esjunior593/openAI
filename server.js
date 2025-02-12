@@ -378,6 +378,12 @@ db.query(
         // 🔹 Enviar notificación al grupo de WhatsApp con el número de pedido
         console.log("📤 Enviando notificación con línea:", linea);
         // 🔹 Enviar notificación al grupo con el ID del pedido correcto
+
+        // 🔹 Asegurar que la descripción tenga un valor válido
+        const descripcionPedido = datosExtraidos.descripcion && datosExtraidos.descripcion !== "No especificado"
+            ? datosExtraidos.descripcion
+            : "No especificado";
+            
 enviarNotificacionGrupo(from, linea, idPedido, descripcionPedido);
 
         // 🔹 Mensaje de confirmación en WhatsApp
