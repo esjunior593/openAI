@@ -355,6 +355,9 @@ db.query('INSERT IGNORE INTO contactos_whatsapp (whatsapp, linea) VALUES (?, ?)'
         }
 });
 
+ // 🔹 Enviar notificación al grupo de WhatsApp
+ enviarNotificacionGrupo(from, datosExtraidos.descripcion, linea);
+
         // 🔹 Mensaje de confirmación en WhatsApp
         const mensaje = `🟢 *_Nuevo pago presentado._*\n\n` +
                         `📌 *Número:* ${datosExtraidos.documento}\n` +
@@ -368,17 +371,7 @@ db.query('INSERT IGNORE INTO contactos_whatsapp (whatsapp, linea) VALUES (?, ?)'
     }
     
 );
-// 🔹 Llamar la función después de guardar en la base de datos
-enviarNotificacionGrupo(from, linea);
 
-// 🔹 Responder con éxito
-return res.json({
-    mensaje: `✅ *Pago recibido exitosamente.*\n\n` +
-             `📌 *Número:* ${datosExtraidos.documento}\n` +
-             `💰 *Valor:* $${datosExtraidos.valor}\n` +
-             `📅 *Fecha:* ${datosExtraidos.fecha}\n\n` +
-             `Estamos procesando tu pedido. ¡Gracias por tu compra! 🎉`
-});
 
         });
 
