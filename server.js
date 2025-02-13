@@ -81,6 +81,14 @@ app.post('/procesar', async (req, res) => {
         // 🔹 Imprimir todo el body para ver qué datos envía WhatsApp
         console.log("📥 Solicitud recibida desde WhatsApp:", req.body);
 
+        // 🔹 Validar si el archivo es una imagen
+        if (!req.body.mimetype || !req.body.mimetype.startsWith('image/')) {
+            console.log("🚨 Archivo no es una imagen, enviando mensaje de soporte...");
+            return res.json({
+                mensaje: "Si necesita asistencia, escriba al número de Soporte.\n\n👉 *Soporte:* 0980757208 👈"
+            });
+        }
+
         // 🔹 Extraer variables de req.body
         const { urlTempFile, from, fullDate, historial } = req.body; 
 
