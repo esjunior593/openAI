@@ -61,22 +61,13 @@ const getBase64FromUrl = async (imageUrl) => {
     try {
         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
         const base64 = Buffer.from(response.data, 'binary').toString('base64');
-        const mimeType = response.headers['content-type'];
-        console.log("🔍 Tipo MIME detectado:", mimeType);
-
-        if (!mimeType.includes('image')) {  // Cambiado para aceptar cualquier tipo que contenga 'image'
-            console.log("🚨 Archivo no es una imagen, enviando mensaje de soporte...");
-            return null;
-        }
-
-        return { url: `data:${mimeType};base64,${base64}` };
+        const mimeType = response.headers['content-type']; // Obtener el tipo MIME de la imagen
+        return { url: `data:${mimeType};base64,${base64}` };  // 🔹 Retorna un objeto con la clave correcta
     } catch (error) {
         console.error("❌ Error al convertir imagen a Base64:", error.message);
         return null;
     }
 };
-
-
 
 
 
@@ -90,14 +81,7 @@ app.post('/procesar', async (req, res) => {
         // 🔹 Imprimir todo el body para ver qué datos envía WhatsApp
         console.log("📥 Solicitud recibida desde WhatsApp:", req.body);
 
-        // 🔹 Validar si el archivo es una imagen
-        if (!req.body.mimetype || !req.body.mimetype.startsWith('image/')) {
-            console.log("🚨 Archivo no es una imagen, enviando mensaje de soporte...");
-            return res.json({
-                mensaje: "Si necesita asistencia, escriba al número de Soporte.\n\n👉 *Soporte:* 0980757208 👈"
-            });
-        }
-
+        
         // 🔹 Extraer variables de req.body
         const { urlTempFile, from, fullDate, historial } = req.body; 
 
