@@ -64,19 +64,19 @@ const getBase64FromUrl = async (imageUrl) => {
         const mimeType = response.headers['content-type'];
         console.log("🔍 Tipo MIME detectado:", mimeType);
 
-        const validMimeTypes = ['image/jpeg', 'image/png', 'image/gif']; // Lista de MIME válidos
-
-        if (!validMimeTypes.includes(mimeType)) {
-            console.log("🚨 Archivo no es una imagen válida (JPEG, PNG o GIF), enviando mensaje de soporte...");
-            return null;
+        // Verificar el tipo MIME directamente del encabezado
+        if (!mimeType.startsWith('image/jpeg') && !mimeType.startsWith('image/png') && !mimeType.startsWith('image/gif')) {
+            console.log("🚨 Archivo no es una imagen admitida, enviando mensaje de soporte...");
+            return { error: true };
         }
 
         return { url: `data:${mimeType};base64,${base64}` };
     } catch (error) {
         console.error("❌ Error al convertir imagen a Base64:", error.message);
-        return null;
+        return { error: true };
     }
 };
+
 
 
 
