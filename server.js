@@ -57,32 +57,17 @@ const enviarNotificacionGrupo = async (from, linea, idPedido) => {
 
 
 
-// Añadir validación estricta del tipo de archivo según su extensión
-// Añadir validación estricta del tipo de archivo según su extensión
 const getBase64FromUrl = async (imageUrl) => {
     try {
-        const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
-        const extension = imageUrl.split('.').pop().toLowerCase();
-
-        if (!allowedExtensions.includes(extension)) {
-            console.log("🚨 Archivo no es una imagen válida, enviando mensaje de soporte...");
-            return null;
-        }
-
         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
         const base64 = Buffer.from(response.data, 'binary').toString('base64');
-        const mimeType = response.headers['content-type'];
-        console.log("🔍 Tipo MIME detectado:", mimeType);
-
-        return { url: `data:${mimeType};base64,${base64}` };
+        const mimeType = response.headers['content-type']; // Obtener el tipo MIME de la imagen
+        return { url: `data:${mimeType};base64,${base64}` };  // 🔹 Retorna un objeto con la clave correcta
     } catch (error) {
         console.error("❌ Error al convertir imagen a Base64:", error.message);
         return null;
     }
 };
-
-
-
 
 
 
@@ -99,16 +84,6 @@ app.post('/procesar', async (req, res) => {
         
         // 🔹 Extraer variables de req.body
         const { urlTempFile, from, fullDate, historial } = req.body; 
-
-        // 🔹 Validar si el archivo es una imagen
-        if (!req.body.mimetype || !req.body.mimetype.startsWith('image/')) {
-            console.log("🚨 Archivo no es una imagen, enviando mensaje de soporte...");
-            return res.json({
-                mensaje: "❌ *No se detectó un comprobante de pago.*\n\n" +
-                         "Si necesita asistencia, escriba al número de Soporte.\n\n" +
-                         "👉 *Soporte:* 0980757208 👈"
-            });
-        }
 
         if (!urlTempFile) {
             return res.status(400).json({ mensaje: 'No se recibió una URL de imagen' });
