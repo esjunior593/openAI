@@ -415,7 +415,7 @@ db.query(
 
     } catch (error) {
         console.error("❌ Error general:", error.message);
-        res.status(500).json({ error: "Error interno del servidor." });
+        res.status(200).json({ error: "Buenas, en qué puedo ayudarle?" });
     }
 });
 
