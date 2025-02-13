@@ -61,10 +61,10 @@ const enviarNotificacionGrupo = async (from, linea, idPedido) => {
 // Añadir validación estricta del tipo de archivo según su extensión
 const getBase64FromUrl = async (imageUrl) => {
     try {
+        const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
         const extension = imageUrl.split('.').pop().toLowerCase();
-        const formatosValidos = ['jpg', 'jpeg', 'png', 'gif'];
 
-        if (!formatosValidos.includes(extension)) {
+        if (!allowedExtensions.includes(extension)) {
             console.log("🚨 Archivo no es una imagen válida, enviando mensaje de soporte...");
             return null;
         }
@@ -72,6 +72,7 @@ const getBase64FromUrl = async (imageUrl) => {
         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
         const base64 = Buffer.from(response.data, 'binary').toString('base64');
         const mimeType = response.headers['content-type'];
+        console.log("🔍 Tipo MIME detectado:", mimeType);
 
         return { url: `data:${mimeType};base64,${base64}` };
     } catch (error) {
@@ -79,6 +80,7 @@ const getBase64FromUrl = async (imageUrl) => {
         return null;
     }
 };
+
 
 
 
@@ -107,7 +109,7 @@ app.post('/procesar', async (req, res) => {
                          "👉 *Soporte:* 0980757208 👈"
             });
         }
-        
+
         if (!urlTempFile) {
             return res.status(400).json({ mensaje: 'No se recibió una URL de imagen' });
         }
