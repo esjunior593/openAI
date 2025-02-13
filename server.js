@@ -185,7 +185,13 @@ Si se detecta un nombre que se parece a 'AMELIA YADIRA RUIZ QUIMI' o 'NELISSA MA
         // 🔹 Mostrar la respuesta de OpenAI en los logs de Railway
         console.log("📩 Respuesta de OpenAI:", JSON.stringify(response, null, 2));
         
-
+        if (!response.choices[0].message.content) {
+            console.log("🚨 OpenAI no devolvió contenido, enviando mensaje de soporte...");
+            return res.json({
+                mensaje: "Si necesita asistencia, escriba al número de Soporte.\n\n👉 *Soporte:* 0980757208 👈"
+            });
+        }
+        
         const datosExtraidos = JSON.parse(response.choices[0].message.content);
 
         // 🔹 Validar si OpenAI extrajo correctamente la información
