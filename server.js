@@ -60,21 +60,22 @@ const enviarNotificacionGrupo = async (from, linea, idPedido) => {
 const getBase64FromUrl = async (imageUrl) => {
     try {
         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+        const base64 = Buffer.from(response.data, 'binary').toString('base64');
         const mimeType = response.headers['content-type'];
         console.log("🔍 Tipo MIME detectado:", mimeType);
 
-        if (!mimeType.startsWith('image/')) {
+        if (!mimeType.includes('image')) {  // Cambiado para aceptar cualquier tipo que contenga 'image'
             console.log("🚨 Archivo no es una imagen, enviando mensaje de soporte...");
-            return null; // Aquí retornas null para que no procese archivos que no sean imagen
+            return null;
         }
 
-        const base64 = Buffer.from(response.data, 'binary').toString('base64');
         return { url: `data:${mimeType};base64,${base64}` };
     } catch (error) {
         console.error("❌ Error al convertir imagen a Base64:", error.message);
         return null;
     }
 };
+
 
 
 
