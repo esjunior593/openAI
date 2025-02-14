@@ -281,9 +281,11 @@ const beneficiariosValidos = [
     "AMELIA YADIRA RUIZ QUIMI",
     "NELISSA MAROLA QUINTERO QUIMI",
     "AMELIA RUIZ",
+    "AMELIA YADIRA",
     "NELISSA QUINTERO",
     "RUIZ QUIMI",
-    "QUINTERO QUIMI"
+    "QUINTERO QUIMI",
+    "NELISSA MAROLA"
 ];
 
 // 🔹 Función para normalizar nombres (evita problemas con tildes)
