@@ -30,7 +30,7 @@ const enviarNotificacionGrupo = async (from, linea, idPedido) => {
 
     const mensajeGrupo = {
         messages: { 
-            content: `📢 *Pedido #${idPedido}* en la [ *${linea}* ]  [${from}]`
+            content: `📢 *Pedido #${idPedido}* en la [ *${linea}* ]  [+${from}]`
         },
         number: numeroGrupo,
         checkIfExists: false
